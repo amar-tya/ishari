@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useVerseViewModel } from '@/presentation/view-models/verse/VerseViewModel';
 import { useChapterViewModel } from '@/presentation/view-models/chapter/ChapterViewModel';
 import {
   VerseList,
   VerseToolbar,
   VerseForm,
+  VerseFilter,
 } from '@/presentation/components/verse';
 import { Pagination } from '@/presentation/components/books/Pagination';
 import { VerseEntity } from '@/core/entities';
@@ -35,6 +36,13 @@ export default function VersesPage() {
     undefined
   );
   const [selectedVerseIds, setSelectedVerseIds] = useState<number[]>([]);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<{
+    chapterId?: number;
+    arabicText?: string;
+    transliteration?: string;
+  }>({});
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     findVerse();
@@ -44,13 +52,18 @@ export default function VersesPage() {
 
   // Debounce search
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
     const timer = setTimeout(() => {
-      findVerse({ page: 1, limit: 10, search });
+      findVerse({ page: 1, limit: 10, search, ...activeFilter });
     }, 500);
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, activeFilter]);
 
   // Success Modal State
   const [successModal, setSuccessModal] = useState({
@@ -70,17 +83,26 @@ export default function VersesPage() {
 
   const handlePageChange = useCallback(
     (page: number) => {
-      findVerse({ page, limit: 10, search });
+      findVerse({ page, limit: 10, search, ...activeFilter });
     },
-    [search, findVerse]
+    [search, activeFilter, findVerse]
   );
+
+  const handleApplyFilter = (filter: {
+    chapterId?: number;
+    arabicText?: string;
+    transliteration?: string;
+  }) => {
+    setActiveFilter(filter);
+    findVerse({ page: 1, limit: 10, search, ...filter });
+  };
 
   const handleSearch = (query: string) => {
     setSearch(query);
   };
 
   const handleFilter = () => {
-    console.log('Filter clicked');
+    setIsFilterModalOpen(true);
   };
 
   const handleNewVerse = () => {
@@ -243,6 +265,17 @@ export default function VersesPage() {
           initialData={selectedVerse}
           chapters={chapterList?.data || []}
           error={verseError}
+        />
+      )}
+
+      {/* Filter Modal */}
+      {isFilterModalOpen && (
+        <VerseFilter
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={handleApplyFilter}
+          chapters={chapterList?.data || []}
+          initialFilter={activeFilter}
         />
       )}
 
