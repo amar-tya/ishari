@@ -246,6 +246,7 @@ export default function TranslationsPage() {
           mode={formMode}
           initialData={selectedTranslation}
           verses={verseList?.data || []}
+          error={translationError}
         />
       )}
 

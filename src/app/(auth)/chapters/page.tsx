@@ -246,6 +246,7 @@ export default function ChapterPage() {
           mode={formMode}
           initialData={selectedChapter}
           books={bookList?.data || []}
+          error={chapterError}
         />
       )}
 

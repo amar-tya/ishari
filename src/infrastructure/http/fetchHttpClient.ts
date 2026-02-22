@@ -116,8 +116,8 @@ export class FetchHttpClient implements HttpClient {
       if (!response.ok) {
         const errorData = data as unknown as ApiErrorResponse;
         const message =
-          errorData?.message ??
           errorData?.error ??
+          errorData?.message ??
           `HTTP Error ${response.status}`;
         const errors = errorData?.errors;
 

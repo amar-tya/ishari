@@ -230,6 +230,7 @@ export default function BooksPage() {
           isLoading={isLoading}
           mode={formMode}
           initialData={editingBook}
+          error={error}
         />
       )}
 

@@ -20,6 +20,7 @@ interface VerseFormProps {
   mode?: VerseFormMode;
   initialData?: VerseEntity;
   chapters: ChapterEntity[];
+  error?: string | null;
 }
 
 function entityToFormData(entity: VerseEntity): VerseFormData {
@@ -37,7 +38,6 @@ const INITIAL_STATE: VerseFormData = {
   arabicText: '',
   transliteration: '',
 };
-
 const VerseFormInternal: React.FC<{
   onClose: () => void;
   onSubmit: (data: VerseCreateRequest | VerseUpdateRequest) => Promise<boolean>;
@@ -45,7 +45,8 @@ const VerseFormInternal: React.FC<{
   mode: VerseFormMode;
   initialData?: VerseEntity;
   chapters: ChapterEntity[];
-}> = ({ onClose, onSubmit, isLoading, mode, initialData, chapters }) => {
+  error?: string | null;
+}> = ({ onClose, onSubmit, isLoading, mode, initialData, chapters, error }) => {
   const initialFormData =
     mode === 'edit' && initialData
       ? entityToFormData(initialData)
@@ -118,6 +119,11 @@ const VerseFormInternal: React.FC<{
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
       <Select
         label="Chapter"
         name="chapterId"
@@ -193,6 +199,7 @@ export const VerseForm: React.FC<VerseFormProps> = ({
   mode = 'create',
   initialData,
   chapters,
+  error,
 }) => {
   const modalTitle = mode === 'edit' ? 'Edit Verse' : 'Create Verse';
   const formKey = `${mode}-${initialData?.id ?? 'new'}`;
@@ -207,6 +214,7 @@ export const VerseForm: React.FC<VerseFormProps> = ({
         mode={mode}
         initialData={initialData}
         chapters={chapters}
+        error={error}
       />
     </Modal>
   );

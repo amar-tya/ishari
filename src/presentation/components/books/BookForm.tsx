@@ -20,6 +20,7 @@ interface BookFormProps {
   isLoading?: boolean;
   mode?: BookFormMode;
   initialData?: BookEntity;
+  error?: string | null;
 }
 
 /**
@@ -54,7 +55,8 @@ const BookFormInternal: React.FC<{
   isLoading: boolean;
   mode: BookFormMode;
   initialData?: BookEntity;
-}> = ({ onClose, onSubmit, isLoading, mode, initialData }) => {
+  error?: string | null;
+}> = ({ onClose, onSubmit, isLoading, mode, initialData, error }) => {
   // Initialize form data based on mode
   const initialFormData =
     mode === 'edit' && initialData
@@ -124,6 +126,11 @@ const BookFormInternal: React.FC<{
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
       <div className="flex flex-col gap-4">
         <Input
           label="Title"
@@ -238,6 +245,7 @@ export const BookForm: React.FC<BookFormProps> = ({
   isLoading = false,
   mode = 'create',
   initialData,
+  error,
 }) => {
   const modalTitle = mode === 'edit' ? 'Edit Buku' : 'Tambah Buku';
 
@@ -253,6 +261,7 @@ export const BookForm: React.FC<BookFormProps> = ({
         isLoading={isLoading}
         mode={mode}
         initialData={initialData}
+        error={error}
       />
     </Modal>
   );

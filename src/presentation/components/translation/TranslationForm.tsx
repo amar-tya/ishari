@@ -25,6 +25,7 @@ interface TranslationFormProps {
   mode?: TranslationFormMode;
   initialData?: TranslationEntity;
   verses: VerseEntity[];
+  error?: string | null;
 }
 
 function entityToFormData(entity: TranslationEntity): TranslationFormData {
@@ -52,7 +53,8 @@ const TranslationFormInternal: React.FC<{
   mode: TranslationFormMode;
   initialData?: TranslationEntity;
   verses: VerseEntity[];
-}> = ({ onClose, onSubmit, isLoading, mode, initialData, verses }) => {
+  error?: string | null;
+}> = ({ onClose, onSubmit, isLoading, mode, initialData, verses, error }) => {
   const initialFormData =
     mode === 'edit' && initialData
       ? entityToFormData(initialData)
@@ -128,6 +130,11 @@ const TranslationFormInternal: React.FC<{
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
       <Select
         label="Verse"
         name="verseId"
@@ -202,6 +209,7 @@ export const TranslationForm: React.FC<TranslationFormProps> = ({
   mode = 'create',
   initialData,
   verses,
+  error,
 }) => {
   const modalTitle =
     mode === 'edit' ? 'Edit Translation' : 'Create Translation';
@@ -217,6 +225,7 @@ export const TranslationForm: React.FC<TranslationFormProps> = ({
         mode={mode}
         initialData={initialData}
         verses={verses}
+        error={error}
       />
     </Modal>
   );

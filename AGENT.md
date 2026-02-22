@@ -96,7 +96,7 @@ Dependency injection wiring.
    ```
 
 6. **Instruksi Update Otomatis**: Jika kamu membuat Folder Utama atau Modul baru, kamu WAJIB mengupdate bagian 'Project Map' di file ini
-7. **Validasi Langkah**: Cek AGENT_RULES.md bagian Project Map. Tentukan di folder mana kamu akan meletakkan file baru ini sebelum menulis kode.
+7. **Validasi Langkah**: Cek AGENT.md bagian Project Map. Tentukan di folder mana kamu akan meletakkan file baru ini sebelum menulis kode.
 
 ### ❌ DON'T
 

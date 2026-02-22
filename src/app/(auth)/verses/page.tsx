@@ -220,7 +220,7 @@ export default function VersesPage() {
           )}
 
           {/* Pagination */}
-          {verseList && verseList.meta && (
+          {verseList?.meta && (
             <Pagination
               currentPage={verseList.meta.page}
               totalPages={verseList.meta.totalPages}
@@ -242,6 +242,7 @@ export default function VersesPage() {
           mode={formMode}
           initialData={selectedVerse}
           chapters={chapterList?.data || []}
+          error={verseError}
         />
       )}
 
