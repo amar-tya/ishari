@@ -5,6 +5,7 @@ import {
   TranslationUpdateRequest,
 } from '@/application/dto';
 import { useTranslation } from '@/presentation/hooks';
+import { VerseDropdown } from '@/core/entities';
 import { useCallback, useState } from 'react';
 import {
   TranslationViewModel,
@@ -26,6 +27,7 @@ export function useTranslationViewModel(): TranslationViewModel {
     updateTranslation: updateTranslationHook,
     deleteTranslation: deleteTranslationHook,
     bulkDeleteTranslation: bulkDeleteTranslationHook,
+    getTranslationDropdown,
   } = useTranslation();
 
   // state
@@ -33,6 +35,11 @@ export function useTranslationViewModel(): TranslationViewModel {
   const [error, setError] = useState<string | null>(null);
   const [translationList, setTranslationList] =
     useState<TranslationResponse | null>(null);
+  const [dropdownOptions, setDropdownOptions] = useState({
+    verses: [] as VerseDropdown[],
+    translators: [] as string[],
+    languages: [] as string[],
+  });
   const [criteria, setCriteria] = useState<TranslationRequest>({
     page: 1,
     limit: 10,
@@ -164,6 +171,19 @@ export function useTranslationViewModel(): TranslationViewModel {
     [bulkDeleteTranslationHook, findTranslation]
   );
 
+  const fetchDropdownOptions = useCallback(async () => {
+    try {
+      const result = await getTranslationDropdown();
+      if (result.success) {
+        setDropdownOptions(result.data);
+      } else {
+        setError(getErrorMessage(result.error));
+      }
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  }, [getTranslationDropdown]);
+
   return {
     isLoading,
     error,
@@ -174,5 +194,7 @@ export function useTranslationViewModel(): TranslationViewModel {
     updateTranslation,
     deleteTranslation,
     bulkDeleteTranslation,
+    dropdownOptions,
+    fetchDropdownOptions,
   };
 }

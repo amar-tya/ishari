@@ -4,7 +4,7 @@ import {
   TranslationRequest,
   TranslationUpdateRequest,
 } from '@/application/dto';
-import { TranslationEntity } from '@/core/entities';
+import { TranslationEntity, VerseDropdown } from '@/core/entities';
 import { Result } from '@/core/types';
 
 export interface ITranslationRepository {
@@ -15,4 +15,11 @@ export interface ITranslationRepository {
   update(request: TranslationUpdateRequest): Promise<Result<TranslationEntity>>;
   delete(id: number): Promise<Result<boolean>>;
   bulkDelete(ids: number[]): Promise<Result<boolean>>;
+  getDataDropdown(): Promise<
+    Result<{
+      verses: VerseDropdown[];
+      translators: string[];
+      languages: string[];
+    }>
+  >;
 }

@@ -4,7 +4,7 @@ import {
   TranslationResponse,
   TranslationUpdateRequest,
 } from '@/application/dto/translation.dto';
-import { TranslationEntity } from '@/core/entities';
+import { TranslationEntity, verseTranslation } from '@/core/entities';
 import { Result } from '@/core/types';
 import { container } from '@/di';
 import { useCallback } from 'react';
@@ -21,6 +21,13 @@ export interface UseTranslation {
   ) => Promise<Result<TranslationEntity>>;
   deleteTranslation: (id: number) => Promise<Result<boolean>>;
   bulkDeleteTranslation: (ids: number[]) => Promise<Result<boolean>>;
+  getTranslationDropdown: () => Promise<
+    Result<{
+      verses: verseTranslation[];
+      translators: string[];
+      languages: string[];
+    }>
+  >;
 }
 
 export function useTranslation(): UseTranslation {
@@ -30,6 +37,7 @@ export function useTranslation(): UseTranslation {
     updateTranslationUseCase,
     deleteTranslationUseCase,
     bulkDeleteTranslationUseCase,
+    getTranslationDropdownUseCase,
   } = container;
 
   const findTranslation = useCallback(
@@ -78,11 +86,23 @@ export function useTranslation(): UseTranslation {
     [bulkDeleteTranslationUseCase]
   );
 
+  const getTranslationDropdown = useCallback(async (): Promise<
+    Result<{
+      verses: verseTranslation[];
+      translators: string[];
+      languages: string[];
+    }>
+  > => {
+    const result = await getTranslationDropdownUseCase.execute();
+    return result;
+  }, [getTranslationDropdownUseCase]);
+
   return {
     findTranslation,
     createTranslation,
     updateTranslation,
     deleteTranslation,
     bulkDeleteTranslation,
+    getTranslationDropdown,
   };
 }

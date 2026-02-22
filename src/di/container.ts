@@ -19,6 +19,7 @@ import {
   UpdateTranslationUseCase,
   DeleteTranslationUseCase,
   BulkDeleteTranslationUseCase,
+  GetTranslationDropdownUseCase,
 } from '@/application/usecases';
 import {
   IBookRepository,
@@ -104,6 +105,9 @@ const deleteTranslationUseCase = new DeleteTranslationUseCase(
 const bulkDeleteTranslationUseCase = new BulkDeleteTranslationUseCase(
   translationRepository
 );
+const getTranslationDropdownUseCase = new GetTranslationDropdownUseCase(
+  translationRepository
+);
 
 /**
  * Container exports
@@ -139,6 +143,7 @@ export const container = {
   updateTranslationUseCase,
   deleteTranslationUseCase,
   bulkDeleteTranslationUseCase,
+  getTranslationDropdownUseCase,
 
   // Services
   authService,

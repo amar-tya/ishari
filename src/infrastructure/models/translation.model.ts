@@ -17,6 +17,12 @@ export interface TranslationApiResponse {
 export interface VerseTranslationApiResponse {
   id: number;
   arabic_text: string;
+  verse_number?: number;
+  chapter?: {
+    id: number;
+    chapter_number: number;
+    title: string;
+  };
 }
 
 export interface TranslationApiMeta {
@@ -62,4 +68,15 @@ export interface TranslationUpdateApiResponse {
   created_at: string;
   updated_at: string;
   verse: VerseTranslationApiResponse;
+}
+
+export interface VerseDropdownApiResponse {
+  id: number;
+  arabic_text: string;
+}
+
+export interface TranslationDropdownApiResponse {
+  verses: VerseDropdownApiResponse[];
+  translator_names: string[];
+  language_codes: string[];
 }

@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslationViewModel } from '@/presentation/view-models/translation/TranslationViewModel';
-import { useVerseViewModel } from '@/presentation/view-models/verse/VerseViewModel';
 import {
   TranslationList,
   TranslationToolbar,
   TranslationForm,
+  TranslationFilter,
 } from '@/presentation/components/translation';
 import { Pagination } from '@/presentation/components/books/Pagination';
 import { TranslationEntity } from '@/core/entities';
@@ -27,35 +27,49 @@ export default function TranslationsPage() {
     updateTranslation,
     deleteTranslation,
     bulkDeleteTranslation,
+    dropdownOptions,
+    fetchDropdownOptions,
   } = useTranslationViewModel();
 
-  const { findVerse, verseList } = useVerseViewModel();
+  // Verse fetch removed since we get verses from translation dropdown now
 
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [selectedTranslation, setSelectedTranslation] = useState<
     TranslationEntity | undefined
-  >(undefined);
+  >(undefined); // Used previously as TranslationEntity
   const [selectedTranslationIds, setSelectedTranslationIds] = useState<
     number[]
   >([]);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<{
+    verseId?: number;
+    translator?: string;
+    languageCode?: string;
+  }>({});
+  const isFirstRender = React.useRef(true);
 
   useEffect(() => {
     findTranslation();
-    findVerse({ page: 1, limit: 100 }); // Fetch verses for dropdown
+    fetchDropdownOptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Debounce search
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
     const timer = setTimeout(() => {
-      findTranslation({ page: 1, limit: 10, search });
+      findTranslation({ page: 1, limit: 10, search, ...activeFilter });
     }, 500);
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, activeFilter]);
 
   // Success Modal State
   const [successModal, setSuccessModal] = useState({
@@ -75,17 +89,26 @@ export default function TranslationsPage() {
 
   const handlePageChange = useCallback(
     (page: number) => {
-      findTranslation({ page, limit: 10, search });
+      findTranslation({ page, limit: 10, search, ...activeFilter });
     },
-    [search, findTranslation]
+    [search, activeFilter, findTranslation]
   );
+
+  const handleApplyFilter = (filter: {
+    verseId?: number;
+    translator?: string;
+    languageCode?: string;
+  }) => {
+    setActiveFilter(filter);
+    findTranslation({ page: 1, limit: 10, search, ...filter });
+  };
 
   const handleSearch = (query: string) => {
     setSearch(query);
   };
 
   const handleFilter = () => {
-    console.log('Filter clicked');
+    setIsFilterModalOpen(true);
   };
 
   const handleNewTranslation = () => {
@@ -245,8 +268,19 @@ export default function TranslationsPage() {
           isLoading={isTranslationLoading}
           mode={formMode}
           initialData={selectedTranslation}
-          verses={verseList?.data || []}
+          verses={dropdownOptions.verses}
           error={translationError}
+        />
+      )}
+
+      {/* Filter Modal */}
+      {isFilterModalOpen && (
+        <TranslationFilter
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={handleApplyFilter}
+          dropdownOptions={dropdownOptions}
+          initialFilter={activeFilter}
         />
       )}
 

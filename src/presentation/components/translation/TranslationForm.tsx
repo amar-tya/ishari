@@ -4,7 +4,7 @@ import {
   TranslationUpdateRequest,
 } from '@/application/dto';
 import { Modal, Input, Button, Select, TextArea } from '../base';
-import { TranslationEntity, VerseEntity } from '@/core/entities';
+import { TranslationEntity, VerseDropdown } from '@/core/entities';
 
 export type TranslationFormMode = 'create' | 'edit';
 
@@ -24,7 +24,7 @@ interface TranslationFormProps {
   isLoading?: boolean;
   mode?: TranslationFormMode;
   initialData?: TranslationEntity;
-  verses: VerseEntity[];
+  verses: VerseDropdown[];
   error?: string | null;
 }
 
@@ -52,7 +52,7 @@ const TranslationFormInternal: React.FC<{
   isLoading: boolean;
   mode: TranslationFormMode;
   initialData?: TranslationEntity;
-  verses: VerseEntity[];
+  verses: VerseDropdown[];
   error?: string | null;
 }> = ({ onClose, onSubmit, isLoading, mode, initialData, verses, error }) => {
   const initialFormData =

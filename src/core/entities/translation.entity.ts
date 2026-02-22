@@ -13,3 +13,8 @@ export interface verseTranslation {
   id: number;
   arabicText: string;
 }
+
+export interface VerseDropdown {
+  id: number;
+  arabicText: string;
+}

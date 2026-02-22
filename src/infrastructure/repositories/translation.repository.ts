@@ -4,6 +4,7 @@ import {
   ListTranslationApiResponse,
   TranslationCreateApiResponse,
   TranslationUpdateApiResponse,
+  TranslationDropdownApiResponse,
 } from '../models';
 import {
   TranslationCreateRequest,
@@ -11,7 +12,7 @@ import {
   TranslationUpdateRequest,
 } from '@/application/dto';
 import { HttpClient } from '@/infrastructure/http';
-import { TranslationEntity } from '@/core/entities';
+import { TranslationEntity, VerseDropdown } from '@/core/entities';
 import { PaginationResponse } from '@/application';
 import { TranslationMapper } from '@/infrastructure/mappers';
 
@@ -100,5 +101,32 @@ export class TranslationRepository implements ITranslationRepository {
     }
 
     return success(true);
+  }
+
+  async getDataDropdown(): Promise<
+    Result<{
+      verses: VerseDropdown[];
+      translators: string[];
+      languages: string[];
+    }>
+  > {
+    const result = await this.httpClient.get<
+      ApiSuccessResponse<TranslationDropdownApiResponse>
+    >(`/translations/dropdown`);
+
+    if (!result.success) {
+      return failure(result.error);
+    }
+
+    const { verses, translator_names, language_codes } = result.data.data.data;
+
+    return success({
+      verses: verses.map((v) => ({
+        id: v.id,
+        arabicText: v.arabic_text,
+      })),
+      translators: translator_names,
+      languages: language_codes,
+    });
   }
 }
