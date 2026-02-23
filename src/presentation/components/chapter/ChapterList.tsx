@@ -63,6 +63,9 @@ export const ChapterList: React.FC<ChapterListProps> = ({
               <th className="py-4 px-[clamp(1rem,1.5vw,1.5rem)] text-[0.75rem] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider w-1/4 min-w-[200px]">
                 Chapter Name
               </th>
+              <th className="py-4 px-[clamp(1rem,1.5vw,1.5rem)] text-[0.75rem] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider w-1/4 min-w-[200px]">
+                Category
+              </th>
               <th className="py-4 px-[clamp(1rem,1.5vw,1.5rem)] text-[0.75rem] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider w-1/3 min-w-[250px]">
                 Summary
               </th>
@@ -105,7 +108,7 @@ export const ChapterList: React.FC<ChapterListProps> = ({
                   <td className="py-4 px-[clamp(1rem,1.5vw,1.5rem)]">
                     <div className="font-medium text-[var(--color-text-primary)] text-[clamp(0.9rem,1.1vw,1.05rem)]">
                       {/* Placeholder for Book Title */}
-                      {chapter.title}
+                      {chapter.book?.title}
                     </div>
                   </td>
 
@@ -123,6 +126,13 @@ export const ChapterList: React.FC<ChapterListProps> = ({
                   <td className="py-4 px-[clamp(1rem,1.5vw,1.5rem)]">
                     <div className="font-semibold text-[var(--color-text-primary)] text-[clamp(0.95rem,1.2vw,1.1rem)]">
                       {chapter.title}
+                    </div>
+                  </td>
+
+                  {/* Category */}
+                  <td className="py-4 px-[clamp(1rem,1.5vw,1.5rem)]">
+                    <div className="text-[var(--color-text-primary)] text-[clamp(0.875rem,1vw,1rem)]">
+                      {chapter.category}
                     </div>
                   </td>
 

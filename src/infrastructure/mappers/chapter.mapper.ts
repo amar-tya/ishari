@@ -1,9 +1,10 @@
+import { BookMapper } from './book.mapper';
 import {
   ChapterCreateRequest,
   ChapterUpdateRequest,
 } from '@/application/dto/chapter.dto';
 import { PaginationResponse } from '@/application/dto/pagination.dto';
-import { ChapterEntity } from '@/core/entities';
+import { BookEntity, ChapterEntity } from '@/core/entities';
 import {
   ChaperApiMeta,
   ChapterApiResponse,
@@ -18,6 +19,9 @@ export class ChapterMapper {
     return {
       id: Number(apiData.id),
       bookId: Number(apiData.book_id), // Map from book_id to bookId
+      book: apiData.book
+        ? BookMapper.toDomain(apiData.book)
+        : ({} as BookEntity),
       chapterNumber: apiData.chapter_number, // Map from chapter_number to chapterNumber
       title: apiData.title,
       category: apiData.category,
@@ -32,6 +36,9 @@ export class ChapterMapper {
     return {
       id: Number(apiData.id),
       bookId: Number(apiData.book_id),
+      book: apiData.book
+        ? BookMapper.toDomain(apiData.book)
+        : ({} as BookEntity),
       chapterNumber: Number(apiData.chapter_number),
       title: apiData.title,
       category: apiData.category,

@@ -1,3 +1,5 @@
+import { BookApiResponse } from './book.model';
+
 export interface ListChapterApiResponse {
   data: ChapterApiResponse[];
   meta: ChaperApiMeta;
@@ -7,6 +9,7 @@ export interface ChapterApiResponse {
   id: string;
   name: string;
   book_id: string; // Changed from bookId to book_id
+  book?: BookApiResponse;
   chapter_number: number; // Changed from chapterNumber to chapter_number
   title: string;
   category: string;
@@ -36,6 +39,7 @@ export interface ChapterCreateApiRequest {
 export interface ChapterCreateApiResponse {
   id: string;
   book_id: number;
+  book?: BookApiResponse;
   chapter_number: number;
   title: string;
   category: string;
@@ -64,6 +68,7 @@ export interface ChapterUpdateApiRequest {
 export interface ChapterUpdateApiResponse {
   id: string;
   book_id: number;
+  book?: BookApiResponse;
   chapter_number: number;
   title: string;
   category: string;
