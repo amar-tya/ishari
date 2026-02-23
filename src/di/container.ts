@@ -20,17 +20,24 @@ import {
   DeleteTranslationUseCase,
   BulkDeleteTranslationUseCase,
   GetTranslationDropdownUseCase,
+  FindUserUseCase,
+  CreateUserUseCase,
+  UpdateUserUseCase,
+  DeleteUserUseCase,
+  BulkDeleteUserUseCase,
 } from '@/application/usecases';
 import {
   IBookRepository,
   IVerseRepositoryPort,
   ITranslationRepository,
+  IUserRepository,
 } from '@/application/ports';
 import {
   AuthRepository,
   ChapterRepository,
   VerseRepository,
   TranslationRepository,
+  UserRepository,
 } from '@/infrastructure/repositories';
 import { AuthService } from '@/infrastructure/services';
 import { createHttpClient } from '@/infrastructure/http';
@@ -62,6 +69,7 @@ const verseRepository: IVerseRepositoryPort = new VerseRepository(httpClient);
 const translationRepository: ITranslationRepository = new TranslationRepository(
   httpClient
 );
+const userRepository: IUserRepository = new UserRepository(httpClient);
 
 // Use Cases - Auth
 const loginUseCase = new LoginUseCase(authRepository, authService);
@@ -109,6 +117,13 @@ const getTranslationDropdownUseCase = new GetTranslationDropdownUseCase(
   translationRepository
 );
 
+// Use Cases - User
+const findUserUseCase = new FindUserUseCase(userRepository);
+const createUserUseCase = new CreateUserUseCase(userRepository);
+const updateUserUseCase = new UpdateUserUseCase(userRepository);
+const deleteUserUseCase = new DeleteUserUseCase(userRepository);
+const bulkDeleteUserUseCase = new BulkDeleteUserUseCase(userRepository);
+
 /**
  * Container exports
  */
@@ -145,6 +160,13 @@ export const container = {
   bulkDeleteTranslationUseCase,
   getTranslationDropdownUseCase,
 
+  // Use Cases - User
+  findUserUseCase,
+  createUserUseCase,
+  updateUserUseCase,
+  deleteUserUseCase,
+  bulkDeleteUserUseCase,
+
   // Services
   authService,
 
@@ -154,6 +176,7 @@ export const container = {
   chapterRepository,
   verseRepository,
   translationRepository,
+  userRepository,
 } as const;
 
 export type Container = typeof container;
