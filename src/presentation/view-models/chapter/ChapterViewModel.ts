@@ -33,10 +33,10 @@ export function useChapterViewModel(): ChapterViewModel {
   const [criteria, setCriteria] = useState<ChapterRequest>({
     page: 1,
     limit: 10,
-    bookId: 0,
-    search: '',
-    category: '',
-    chapterId: 0,
+    bookId: undefined,
+    search: undefined,
+    category: undefined,
+    chapterId: undefined,
   });
 
   // Action

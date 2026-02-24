@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { VerseCreateRequest, VerseUpdateRequest } from '@/application/dto';
-import { Modal, Input, TextArea, Button, Select } from '../base';
+import { Modal, Input, TextArea, Button, SearchableSelect } from '../base';
 import { VerseEntity, ChapterEntity } from '@/core/entities';
 
 export type VerseFormMode = 'create' | 'edit';
@@ -124,21 +124,22 @@ const VerseFormInternal: React.FC<{
           {error}
         </div>
       )}
-      <Select
+      <SearchableSelect
         label="Chapter"
         name="chapterId"
         value={formData.chapterId}
         onChange={handleChange}
+        options={[
+          { value: '', label: 'Pilih Chapter' },
+          ...chapters.map((chapter) => ({
+            value: chapter.id,
+            label: `${chapter.title} (${chapter.category})`,
+          })),
+        ]}
         error={errors.chapterId}
         disabled={isLoading}
-      >
-        <option value="">Pilih Chapter</option>
-        {chapters.map((chapter) => (
-          <option key={chapter.id} value={chapter.id}>
-            {chapter.title}
-          </option>
-        ))}
-      </Select>
+        placeholder="Pilih Chapter"
+      />
 
       <Input
         label="Verse Number"
