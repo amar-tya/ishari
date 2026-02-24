@@ -103,7 +103,8 @@ export const VerseFilter: React.FC<VerseFilterProps> = ({
                 <option value="">All Chapters</option>
                 {chapters.map((chapter) => (
                   <option key={chapter.id} value={chapter.id}>
-                    {chapter.chapterNumber}. {chapter.title}
+                    {chapter.chapterNumber}. {chapter.title} ({chapter.category}
+                    )
                   </option>
                 ))}
               </select>
