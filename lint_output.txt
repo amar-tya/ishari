@@ -1,0 +1,24 @@
+$ eslint
+
+C:\Users\aamar\Data Amar\Project\web\_Eksternal\ishari-admin-next\src\infrastructure\models\bookmark.model.ts
+  24:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+  25:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\aamar\Data Amar\Project\web\_Eksternal\ishari-admin-next\src\infrastructure\repositories\book.repository.ts
+  9:10  warning  'ApiSuccessResponse' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\aamar\Data Amar\Project\web\_Eksternal\ishari-admin-next\src\presentation\components\base\Avatar.tsx
+  44:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\aamar\Data Amar\Project\web\_Eksternal\ishari-admin-next\src\presentation\components\books\BookToolbar.tsx
+  11:69  warning  'onFilterClick' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\aamar\Data Amar\Project\web\_Eksternal\ishari-admin-next\src\presentation\hooks\useAuth.ts
+  8:10  warning  'getErrorMessage' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\aamar\Data Amar\Project\web\_Eksternal\ishari-admin-next\src\presentation\view-models\book\BookViewModel.ts
+  64:5  warning  React Hook useCallback has missing dependencies: 'page' and 'search'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Γ£û 7 problems (2 errors, 5 warnings)
+
+error: script "lint" exited with code 1

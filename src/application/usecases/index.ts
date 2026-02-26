@@ -5,3 +5,4 @@ export * from './verse';
 export * from './translation';
 export * from './user';
 export * from './bookmark';
+export * from './hadi';

@@ -5,3 +5,4 @@ export * from './verse.entity';
 export * from './translation.entity';
 export * from './user.entity';
 export * from './bookmark.entity';
+export * from './hadi.entity';

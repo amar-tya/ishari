@@ -5,3 +5,4 @@ export * from './verse.repository.port';
 export * from './translation.repository.port';
 export * from './user.repository.port';
 export * from './bookmark.repository.port';
+export * from './hadi.repository.port';

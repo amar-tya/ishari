@@ -29,6 +29,11 @@ import {
   CreateBookmarkUseCase,
   UpdateBookmarkUseCase,
   DeleteBookmarkUseCase,
+  CreateHadiUseCase,
+  UpdateHadiUseCase,
+  DeleteHadiUseCase,
+  FindHadiUseCase,
+  ListHadiUseCase,
 } from '@/application/usecases';
 import {
   IBookRepository,
@@ -36,6 +41,7 @@ import {
   ITranslationRepository,
   IUserRepository,
   IBookmarkRepositoryPort,
+  IHadiRepository,
 } from '@/application/ports';
 import {
   AuthRepository,
@@ -44,6 +50,7 @@ import {
   TranslationRepository,
   UserRepository,
   BookmarkRepository,
+  HadiRepository,
 } from '@/infrastructure/repositories';
 import { AuthService } from '@/infrastructure/services';
 import { createHttpClient } from '@/infrastructure/http';
@@ -79,6 +86,7 @@ const userRepository: IUserRepository = new UserRepository(httpClient);
 const bookmarkRepository: IBookmarkRepositoryPort = new BookmarkRepository(
   httpClient
 );
+const hadiRepository: IHadiRepository = new HadiRepository(httpClient);
 
 // Use Cases - Auth
 const loginUseCase = new LoginUseCase(authRepository, authService);
@@ -139,6 +147,13 @@ const createBookmarkUseCase = new CreateBookmarkUseCase(bookmarkRepository);
 const updateBookmarkUseCase = new UpdateBookmarkUseCase(bookmarkRepository);
 const deleteBookmarkUseCase = new DeleteBookmarkUseCase(bookmarkRepository);
 
+// Use Cases - Hadi
+const createHadiUseCase = new CreateHadiUseCase(hadiRepository);
+const updateHadiUseCase = new UpdateHadiUseCase(hadiRepository);
+const deleteHadiUseCase = new DeleteHadiUseCase(hadiRepository);
+const findHadiUseCase = new FindHadiUseCase(hadiRepository);
+const listHadiUseCase = new ListHadiUseCase(hadiRepository);
+
 /**
  * Container exports
  */
@@ -188,6 +203,13 @@ export const container = {
   updateBookmarkUseCase,
   deleteBookmarkUseCase,
 
+  // Use Cases - Hadi
+  createHadiUseCase,
+  updateHadiUseCase,
+  deleteHadiUseCase,
+  findHadiUseCase,
+  listHadiUseCase,
+
   // Services
   authService,
 
@@ -199,6 +221,7 @@ export const container = {
   translationRepository,
   userRepository,
   bookmarkRepository,
+  hadiRepository,
 } as const;
 
 export type Container = typeof container;

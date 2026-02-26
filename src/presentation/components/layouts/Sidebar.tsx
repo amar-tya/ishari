@@ -15,6 +15,7 @@ import {
   SearchHistoryIcon,
   TranslationsIcon,
   UsersIcon,
+  UserIcon,
   VersesIcon,
   VerseMediaIcon,
   LogoutIcon,
@@ -45,11 +46,24 @@ const navGroups: NavGroup[] = [
       { label: 'Bookmarks', href: '/bookmarks', icon: <BookmarkIcon /> },
       { label: 'Books', href: '/books', icon: <BookIcon /> },
       { label: 'Chapters', href: '/chapters', icon: <ChaptersIcon /> },
-      { label: 'Refresh Tokens', href: '/refresh-tokens', icon: <RefreshIcon /> },
-      { label: 'Search History', href: '/search-history', icon: <SearchHistoryIcon /> },
-      { label: 'Translations', href: '/translations', icon: <TranslationsIcon /> },
+      {
+        label: 'Refresh Tokens',
+        href: '/refresh-tokens',
+        icon: <RefreshIcon />,
+      },
+      {
+        label: 'Search History',
+        href: '/search-history',
+        icon: <SearchHistoryIcon />,
+      },
+      {
+        label: 'Translations',
+        href: '/translations',
+        icon: <TranslationsIcon />,
+      },
       { label: 'Users', href: '/users', icon: <UsersIcon /> },
       { label: 'Verses', href: '/verses', icon: <VersesIcon /> },
+      { label: 'Hadi', href: '/hadi', icon: <UserIcon /> },
       { label: 'Verse Media', href: '/verse-media', icon: <VerseMediaIcon /> },
     ],
   },
@@ -60,7 +74,7 @@ export const Sidebar: React.FC = () => {
   const { isCollapsed, toggleSidebar } = useSidebar();
   const { isLoggingOut, handleLogout } = useLayoutViewModel();
 
-  // Adjusted clamp logic: 
+  // Adjusted clamp logic:
   // Collapsed: fixed 80px (icons centered)
   // Expanded: clamp(240px, 20vw, 280px) -> slightly wider min, constrained max
   const sidebarWidth = isCollapsed ? '80px' : 'clamp(240px, 20vw, 280px)';
@@ -79,15 +93,15 @@ export const Sidebar: React.FC = () => {
       style={{ width: sidebarWidth }}
     >
       {/* Logo */}
-      <div 
+      <div
         className={`
           flex items-center gap-3 border-b border-[var(--color-border-light)]
           ${isCollapsed ? 'justify-center' : ''}
         `}
-        style={{ 
+        style={{
           height: '80px',
           padding: isCollapsed ? '0' : 'clamp(1rem, 2vw, 1.5rem)',
-          transition: 'padding 0.3s'
+          transition: 'padding 0.3s',
         }}
       >
         <div className="flex-shrink-0">
@@ -95,8 +109,12 @@ export const Sidebar: React.FC = () => {
         </div>
         {!isCollapsed && (
           <div className="overflow-hidden whitespace-nowrap">
-            <h1 className="text-subtitle font-bold text-[var(--color-text-primary)]">Master Data</h1>
-            <p className="text-caption text-[var(--color-text-muted)]">ISHARI Admin v2.0</p>
+            <h1 className="text-subtitle font-bold text-[var(--color-text-primary)]">
+              Master Data
+            </h1>
+            <p className="text-caption text-[var(--color-text-muted)]">
+              ISHARI Admin v2.0
+            </p>
           </div>
         )}
       </div>
@@ -105,17 +123,17 @@ export const Sidebar: React.FC = () => {
       <nav className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar py-6">
         {navGroups.map((group) => (
           <div key={group.title} className="mb-6">
-             {!isCollapsed && (
-              <h3 
+            {!isCollapsed && (
+              <h3
                 className="text-caption uppercase tracking-wider font-semibold mb-2 text-[var(--color-text-muted)] opacity-80"
                 style={{ paddingLeft: 'clamp(1.5rem, 2vw, 2rem)' }}
               >
                 {group.title}
               </h3>
-             )}
-             {isCollapsed && group.title === 'MASTER TABLES' && (
-                <div className="h-px w-8 mx-auto bg-[var(--color-border-light)] mb-4" />
-             )}
+            )}
+            {isCollapsed && group.title === 'MASTER TABLES' && (
+              <div className="h-px w-8 mx-auto bg-[var(--color-border-light)] mb-4" />
+            )}
 
             <ul className="space-y-1 px-3">
               {group.items.map((item) => {
@@ -128,17 +146,24 @@ export const Sidebar: React.FC = () => {
                       className={`
                         flex items-center gap-3 rounded-lg transition-all duration-200
                         ${isCollapsed ? 'justify-center p-3' : 'px-4 py-2'}
-                        ${isActive
-                          ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
-                          : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-main)] hover:text-[var(--color-text-primary)]'
+                        ${
+                          isActive
+                            ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
+                            : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-main)] hover:text-[var(--color-text-primary)]'
                         }
                       `}
                     >
-                      <span className={`flex-shrink-0 ${isActive ? 'text-[var(--color-primary)]' : ''}`}>
-                         {/* Clone element to force size if needed, or rely on css */}
-                         {item.icon}
+                      <span
+                        className={`flex-shrink-0 ${isActive ? 'text-[var(--color-primary)]' : ''}`}
+                      >
+                        {/* Clone element to force size if needed, or rely on css */}
+                        {item.icon}
                       </span>
-                      {!isCollapsed && <span className="text-menu font-medium whitespace-nowrap">{item.label}</span>}
+                      {!isCollapsed && (
+                        <span className="text-menu font-medium whitespace-nowrap">
+                          {item.label}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );
@@ -149,9 +174,7 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {/* Footer Actions */}
-      <div 
-        className="border-t border-[var(--color-border-light)] bg-[var(--color-bg-sidebar)]"
-      >
+      <div className="border-t border-[var(--color-border-light)] bg-[var(--color-bg-sidebar)]">
         {/* Toggle Button */}
         <button
           onClick={toggleSidebar}
@@ -162,13 +185,19 @@ export const Sidebar: React.FC = () => {
             border-b border-[var(--color-border-light)]
           "
         >
-           <div className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}>
-              <ChevronLeftIcon />
-           </div>
+          <div
+            className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
+          >
+            <ChevronLeftIcon />
+          </div>
         </button>
 
         {/* Logout */}
-        <div style={{ padding: isCollapsed ? '1rem' : 'clamp(0.75rem, 1.5vw, 1rem)' }}>
+        <div
+          style={{
+            padding: isCollapsed ? '1rem' : 'clamp(0.75rem, 1.5vw, 1rem)',
+          }}
+        >
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
@@ -181,10 +210,14 @@ export const Sidebar: React.FC = () => {
               disabled:opacity-50 disabled:cursor-not-allowed
               ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}
             `}
-            title={isCollapsed ? "Logout" : ""}
+            title={isCollapsed ? 'Logout' : ''}
           >
             <LogoutIcon />
-            {!isCollapsed && <span className="text-menu">{isLoggingOut ? 'Logging out...' : 'Logout'}</span>}
+            {!isCollapsed && (
+              <span className="text-menu">
+                {isLoggingOut ? 'Logging out...' : 'Logout'}
+              </span>
+            )}
           </button>
         </div>
       </div>
