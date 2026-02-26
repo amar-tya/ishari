@@ -25,12 +25,17 @@ import {
   UpdateUserUseCase,
   DeleteUserUseCase,
   BulkDeleteUserUseCase,
+  FindBookmarkUseCase,
+  CreateBookmarkUseCase,
+  UpdateBookmarkUseCase,
+  DeleteBookmarkUseCase,
 } from '@/application/usecases';
 import {
   IBookRepository,
   IVerseRepositoryPort,
   ITranslationRepository,
   IUserRepository,
+  IBookmarkRepositoryPort,
 } from '@/application/ports';
 import {
   AuthRepository,
@@ -38,6 +43,7 @@ import {
   VerseRepository,
   TranslationRepository,
   UserRepository,
+  BookmarkRepository,
 } from '@/infrastructure/repositories';
 import { AuthService } from '@/infrastructure/services';
 import { createHttpClient } from '@/infrastructure/http';
@@ -70,6 +76,9 @@ const translationRepository: ITranslationRepository = new TranslationRepository(
   httpClient
 );
 const userRepository: IUserRepository = new UserRepository(httpClient);
+const bookmarkRepository: IBookmarkRepositoryPort = new BookmarkRepository(
+  httpClient
+);
 
 // Use Cases - Auth
 const loginUseCase = new LoginUseCase(authRepository, authService);
@@ -124,6 +133,12 @@ const updateUserUseCase = new UpdateUserUseCase(userRepository);
 const deleteUserUseCase = new DeleteUserUseCase(userRepository);
 const bulkDeleteUserUseCase = new BulkDeleteUserUseCase(userRepository);
 
+// Use Cases - Bookmark
+const findBookmarkUseCase = new FindBookmarkUseCase(bookmarkRepository);
+const createBookmarkUseCase = new CreateBookmarkUseCase(bookmarkRepository);
+const updateBookmarkUseCase = new UpdateBookmarkUseCase(bookmarkRepository);
+const deleteBookmarkUseCase = new DeleteBookmarkUseCase(bookmarkRepository);
+
 /**
  * Container exports
  */
@@ -167,6 +182,12 @@ export const container = {
   deleteUserUseCase,
   bulkDeleteUserUseCase,
 
+  // Use Cases - Bookmark
+  findBookmarkUseCase,
+  createBookmarkUseCase,
+  updateBookmarkUseCase,
+  deleteBookmarkUseCase,
+
   // Services
   authService,
 
@@ -177,6 +198,7 @@ export const container = {
   verseRepository,
   translationRepository,
   userRepository,
+  bookmarkRepository,
 } as const;
 
 export type Container = typeof container;

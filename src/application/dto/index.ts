@@ -4,3 +4,4 @@ export * from './pagination.dto';
 export * from './verse.dto';
 export * from './translation.dto';
 export * from './user.dto';
+export * from './bookmark.dto';

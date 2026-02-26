@@ -4,3 +4,4 @@ export * from './chapter.entity';
 export * from './verse.entity';
 export * from './translation.entity';
 export * from './user.entity';
+export * from './bookmark.entity';

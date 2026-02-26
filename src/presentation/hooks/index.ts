@@ -6,6 +6,7 @@
 
 export * from './useAuth';
 export * from './useUser';
+export * from './useBookmark';
 export * from './useBook';
 export * from './useChapter';
 export * from './useVerse';
