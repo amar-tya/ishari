@@ -313,6 +313,25 @@ export const UsersIcon: React.FC<IconProps> = ({
   </svg>
 );
 
+// More Vertical icon (three dots)
+export const MoreVerticalIcon: React.FC<IconProps> = ({
+  className = '',
+  size = 20,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="12" cy="12" r="2" fill="currentColor" />
+    <circle cx="12" cy="5" r="2" fill="currentColor" />
+    <circle cx="12" cy="19" r="2" fill="currentColor" />
+  </svg>
+);
+
 // Verses icon (quote)
 export const VersesIcon: React.FC<IconProps> = ({
   className = '',

@@ -5,14 +5,21 @@ import {
   PlayIcon,
   SparklesIcon,
   PlayCircleIcon,
+  TranslationsIcon,
 } from '@/presentation/components/base/icons';
 import { ChapterEntity } from '@/core/entities';
 
 interface PublicSidebarProps {
   chapter: ChapterEntity | null;
+  showTranslation: boolean;
+  setShowTranslation: (show: boolean) => void;
 }
 
-export function PublicSidebar({ chapter }: PublicSidebarProps) {
+export function PublicSidebar({
+  chapter,
+  showTranslation,
+  setShowTranslation,
+}: PublicSidebarProps) {
   return (
     <aside className="hidden lg:block lg:col-span-3 space-y-6">
       <div className="sticky top-28">
@@ -20,15 +27,26 @@ export function PublicSidebar({ chapter }: PublicSidebarProps) {
           <span className="inline-flex items-center justify-center px-3 py-1 bg-[#e6f7ec] text-[#3da35f] text-xs font-bold rounded-full mb-3">
             {chapter?.category || 'Meccan'}
           </span>
-          <h1 className="text-3xl font-bold text-[#1e293b] mb-1">
+          <h1 className="text-[clamp(1.125rem,2.5vw,1.5rem)] font-bold text-[#1e293b] mb-1">
             {chapter?.title || 'Unknown Surah'}
           </h1>
           <p className="text-[#475569] text-sm mb-4">
             {chapter?.title || 'Unknown'} • {chapter?.totalVerses || 0} Verses
           </p>
-          <button className="w-full h-12 bg-[#51c878] hover:bg-[#3da35f] text-white rounded-xl shadow-lg shadow-[#51c878]/30 flex items-center justify-center gap-2 transition-all font-semibold active:scale-95">
+          <button className="w-full h-12 bg-[#51c878] hover:bg-[#3da35f] text-white rounded-xl shadow-lg shadow-[#51c878]/30 flex items-center justify-center gap-2 transition-all font-semibold active:scale-95 mb-3">
             <PlayIcon size={24} />
             Play Full Surah
+          </button>
+          <button
+            onClick={() => setShowTranslation(!showTranslation)}
+            className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl transition-all font-semibold border ${
+              showTranslation
+                ? 'bg-white border-[#51c878] text-[#51c878] hover:bg-[#e6f7ec]'
+                : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+            }`}
+          >
+            <TranslationsIcon size={20} />
+            {showTranslation ? 'Hide Translation' : 'Show Translation'}
           </button>
         </div>
 
