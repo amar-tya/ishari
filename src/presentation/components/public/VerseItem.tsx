@@ -7,8 +7,10 @@ import {
   GraphicEqIcon,
   BookmarkIcon,
   ShareIcon,
+  VerseEndIcon,
 } from '@/presentation/components/base/icons';
 import { VerseEntity } from '@/core/entities';
+import { toArabicNumber } from '@/shared/utils/arabicText';
 
 interface VerseItemProps {
   verse: VerseEntity;
@@ -22,17 +24,6 @@ export function VerseItem({ verse, index }: VerseItemProps) {
   return (
     <div className="group relative bg-white hover:bg-slate-50 transition-colors rounded-2xl p-6 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-slate-100">
       <div className="flex gap-4 md:gap-8">
-        <div className="shrink-0 pt-2">
-          <div
-            className={`size-10 rounded-full border-2 ${
-              progress > 0
-                ? 'border-[#51c878]/20 text-[#51c878] bg-[#e6f7ec]/50'
-                : 'border-slate-200 text-slate-400'
-            } font-bold flex items-center justify-center text-sm`}
-          >
-            {verse.verseNumber}
-          </div>
-        </div>
         <div className="flex-1 space-y-6">
           <div className="text-right dir-rtl w-full">
             <p className="font-serif text-4xl md:text-5xl leading-[2.2] text-slate-800 relative inline-block">
@@ -56,9 +47,15 @@ export function VerseItem({ verse, index }: VerseItemProps) {
             </p>
           </div>
         </div>
-        <div className="shrink-0 flex flex-col gap-2 pt-2">
+        <div className="shrink-0 flex flex-col gap-2 pt-2 items-center">
+          <div className="relative flex items-center justify-center size-9 mb-2 text-[#51c878]">
+            <VerseEndIcon size={36} className="absolute inset-0" />
+            <span className="font-serif text-xs font-bold mt-0.5 z-10 w-fit h-fit text-center">
+              {toArabicNumber(verse.verseNumber)}
+            </span>
+          </div>
           <div className="relative group/audio">
-            <button className="size-10 rounded-xl bg-white shadow-[inset_2px_2px_5px_rgba(0,0,0,0.05),inset_-2px_-2px_5px_rgba(255,255,255,0.8)] text-[#51c878] hover:text-[#3da35f] hover:shadow-none hover:bg-slate-100 transition-all flex items-center justify-center">
+            {/* <button className="size-10 rounded-xl bg-white shadow-[inset_2px_2px_5px_rgba(0,0,0,0.05),inset_-2px_-2px_5px_rgba(255,255,255,0.8)] text-[#51c878] hover:text-[#3da35f] hover:shadow-none hover:bg-slate-100 transition-all flex items-center justify-center">
               <PlayIcon size={24} />
             </button>
             {index === 0 && (
@@ -77,13 +74,13 @@ export function VerseItem({ verse, index }: VerseItemProps) {
                   Voice
                 </button>
               </div>
-            )}
+            )} */}
           </div>
           <button className="size-10 rounded-xl bg-transparent hover:bg-slate-100 text-slate-400 hover:text-[#51c878] transition-all flex items-center justify-center">
-            <BookmarkIcon size={20} />
+            {/* <BookmarkIcon size={20} /> */}
           </button>
           <button className="size-10 rounded-xl bg-transparent hover:bg-slate-100 text-slate-400 hover:text-[#51c878] transition-all flex items-center justify-center">
-            <ShareIcon size={20} />
+            {/* <ShareIcon size={20} /> */}
           </button>
         </div>
       </div>

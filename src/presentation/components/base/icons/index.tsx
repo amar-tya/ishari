@@ -1,11 +1,35 @@
 import React from 'react';
 export * from './ChevronLeftIcon';
 export * from './CloseIcon';
+export * from './VerseEndIcon';
 
 interface IconProps {
   className?: string;
   size?: number | string;
 }
+
+// Menu icon
+export const MenuIcon: React.FC<IconProps> = ({
+  className = '',
+  size = 20,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M3 12H21M3 6H21M3 18H21"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 // Dashboard icon
 export const DashboardIcon: React.FC<IconProps> = ({

@@ -65,9 +65,9 @@ export function PublicDashboard() {
                 {chapter?.title || 'Unknown'} • {chapter?.category || 'Meccan'}
               </p>
             </div>
-            <button className="size-10 bg-[#51c878] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#51c878]/30">
+            {/* <button className="size-10 bg-[#51c878] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#51c878]/30">
               <PlayIcon size={24} />
-            </button>
+            </button> */}
           </div>
 
           {loading ? (
@@ -101,7 +101,7 @@ export function PublicDashboard() {
         </section>
       </main>
 
-      <PublicAudioPlayer />
+      {/* <PublicAudioPlayer /> */}
     </>
   );
 }
