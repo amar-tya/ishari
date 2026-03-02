@@ -1,70 +1,81 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
 
 // Routes yang tidak memerlukan authentication
-const publicRoutes = ["/login", "/register", "/forgot-password"];
+const publicRoutes = ['/login', '/register', '/forgot-password'];
 
-// Routes yang memerlukan authentication
-const protectedRoutePatterns = ["/dashboard", "/settings", "/profile"];
-
-/**
- * Check apakah path termasuk public route
- */
 function isPublicRoute(pathname: string): boolean {
   return publicRoutes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 }
 
-/**
- * Check apakah path termasuk protected route
- */
-function isProtectedRoute(pathname: string): boolean {
-  return protectedRoutePatterns.some(
-    (pattern) => pathname === pattern || pathname.startsWith(`${pattern}/`)
-  );
-}
-
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip proxy untuk static files dan API routes
+  // Skip untuk static files dan api routes
   if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname.includes(".")
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api/') ||
+    pathname.includes('.')
   ) {
     return NextResponse.next();
   }
 
-  // Cek access token dari cookies
-  const accessToken = request.cookies.get("access_token")?.value;
-  const isAuthenticated = !!accessToken;
+  let supabaseResponse = NextResponse.next({ request });
 
-  // Jika mengakses public route (login) tapi sudah authenticated
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  // PENTING: jangan tambahkan kode antara createServerClient dan getUser
+  // Lihat: https://supabase.com/docs/guides/auth/server-side/nextjs
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isAuthenticated = !!user;
+
+  // Sudah login tapi akses halaman login → redirect ke dashboard
   if (isPublicRoute(pathname) && isAuthenticated) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // Jika mengakses protected route tapi belum authenticated
-  if (isProtectedRoute(pathname) && !isAuthenticated) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
+  // Belum login tapi akses halaman protected → redirect ke login
+  if (!isPublicRoute(pathname) && !isAuthenticated && pathname !== '/') {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  return supabaseResponse;
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except:
+     * Match semua request kecuali:
      * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
+     * - _next/image (image optimization)
+     * - favicon.ico
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\..*|api).*)",
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|api).*)',
   ],
 };
