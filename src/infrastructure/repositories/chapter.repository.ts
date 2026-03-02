@@ -4,104 +4,117 @@ import {
   ChapterUpdateRequest,
 } from '@/application/dto/chapter.dto';
 import { IChapterRepository } from '@/application/ports/repository/chapter.repository.port';
-import { ApiSuccessResponse, failure, Result, success } from '@/core/types';
-import { HttpClient } from '@/infrastructure/http';
-import {
-  ChapterCreateApiResponse,
-  ChapterUpdateApiResponse,
-  ListChapterApiResponse,
-} from '@/infrastructure/models';
+import { failure, Result, success } from '@/core/types';
 import { ChapterEntity } from '@/core/entities';
 import { PaginationResponse } from '@/application/dto/pagination.dto';
 import { ChapterMapper } from '@/infrastructure/mappers';
+import { ServerError } from '@/core/errors';
+import { SupabaseClient } from '@supabase/supabase-js';
+import {
+  ChapterApiResponse,
+  ListChapterApiResponse,
+} from '@/infrastructure/models';
 
 export class ChapterRepository implements IChapterRepository {
-  private readonly httpClient: HttpClient;
-
-  constructor(httpClient: HttpClient) {
-    this.httpClient = httpClient;
-  }
+  constructor(private readonly supabase: SupabaseClient) {}
 
   async findChapter(
     criteria: ChapterRequest
   ): Promise<Result<{ data: ChapterEntity[]; meta: PaginationResponse }>> {
-    const queryParams = new URLSearchParams();
-    Object.entries(criteria).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        queryParams.append(key, String(value));
+    const page = criteria.page ?? 1;
+    const limit = criteria.limit ?? 10;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    let query = this.supabase
+      .from('chapters')
+      .select('*, book:books(*)', { count: 'exact' })
+      .is('deleted_at', null)
+      .range(from, to)
+      .order('chapter_number', { ascending: true });
+
+    if (criteria.search) {
+      query = query.or(
+        `title.ilike.%${criteria.search}%,name.ilike.%${criteria.search}%`
+      );
+    }
+    if (criteria.bookId) {
+      query = query.eq('book_id', criteria.bookId);
+    }
+    if (criteria.category) {
+      // Support multiple categories (comma-separated)
+      const cats = String(criteria.category).split(',').filter(Boolean);
+      if (cats.length === 1) {
+        query = query.eq('category', cats[0]);
+      } else if (cats.length > 1) {
+        query = query.in('category', cats);
       }
-    });
-
-    const result = await this.httpClient.get<ListChapterApiResponse>(
-      `/chapters?${queryParams.toString()}`
-    );
-
-    if (!result.success) {
-      return failure(result.error);
     }
 
-    // mapper data respont to domain
-    const resultData = ChapterMapper.toResponse(result.data.data);
-    return success({
-      data: resultData.data,
-      meta: resultData.meta,
-    });
+    const { data, error, count } = await query;
+
+    if (error) return failure(new ServerError(error.message));
+
+    const total = count ?? 0;
+    const totalPages = Math.ceil(total / limit);
+
+    const apiResponse: ListChapterApiResponse = {
+      data: (data ?? []) as ChapterApiResponse[],
+      meta: {
+        total,
+        total_pages: totalPages,
+        page,
+        limit,
+        count: data?.length ?? 0,
+      },
+    };
+
+    const resultData = ChapterMapper.toResponse(apiResponse);
+    return success({ data: resultData.data, meta: resultData.meta });
   }
 
   async create(request: ChapterCreateRequest): Promise<Result<ChapterEntity>> {
-    // mapper request to api
     const apiRequest = ChapterMapper.toCreateRequest(request);
-    const result = await this.httpClient.post<
-      ApiSuccessResponse<ChapterCreateApiResponse>
-    >(`/chapters`, apiRequest);
+    const { data, error } = await this.supabase
+      .from('chapters')
+      .insert(apiRequest)
+      .select('*, book:books(*)')
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    // mapper data respont to domain
-    const resultData = ChapterMapper.toDomain2(result.data.data.data);
-    return success(resultData);
+    if (error) return failure(new ServerError(error.message));
+    return success(ChapterMapper.toDomain(data as ChapterApiResponse));
   }
 
   async update(request: ChapterUpdateRequest): Promise<Result<ChapterEntity>> {
-    // mapper request to api
     const apiRequest = ChapterMapper.toUpdateRequest(request);
-    const result = await this.httpClient.put<
-      ApiSuccessResponse<ChapterUpdateApiResponse>
-    >(`/chapters/${request.chapterId}`, apiRequest);
+    const { data, error } = await this.supabase
+      .from('chapters')
+      .update(apiRequest)
+      .eq('id', request.chapterId)
+      .select('*, book:books(*)')
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    // mapper data respont to domain
-    const resultData = ChapterMapper.toDomain2(result.data.data.data);
-    return success(resultData);
+    if (error) return failure(new ServerError(error.message));
+    return success(ChapterMapper.toDomain(data as ChapterApiResponse));
   }
 
   async delete(id: number): Promise<Result<boolean>> {
-    const result = await this.httpClient.delete<ApiSuccessResponse<void>>(
-      `/chapters/${id}`
-    );
+    const { error } = await this.supabase
+      .from('chapters')
+      .delete()
+      .eq('id', id);
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
+    if (error) return failure(new ServerError(error.message));
     return success(true);
   }
 
   async bulkDelete(ids: number[]): Promise<Result<boolean>> {
-    const result = await this.httpClient.post<ApiSuccessResponse<void>>(
-      `/chapters/bulk-delete`,
-      { ids }
-    );
+    const { error } = await this.supabase
+      .from('chapters')
+      .delete()
+      .in('id', ids);
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
+    if (error) return failure(new ServerError(error.message));
     return success(true);
   }
 }

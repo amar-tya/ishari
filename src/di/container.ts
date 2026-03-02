@@ -56,7 +56,6 @@ import {
   StatsRepository,
 } from '@/infrastructure/repositories';
 import { AuthService } from '@/infrastructure/services';
-import { createHttpClient } from '@/infrastructure/http';
 import { BookRepository } from '@/infrastructure/repositories/book.repository';
 import { IChapterRepository } from '@/application/ports/repository/chapter.repository.port';
 import { supabaseBrowserClient } from '@/infrastructure/supabase';
@@ -68,30 +67,35 @@ import { supabaseBrowserClient } from '@/infrastructure/supabase';
  * Centralized wiring untuk seluruh aplikasi.
  */
 
-// Infrastructure
-// Use /api/proxy as baseURL so all requests go through the proxy route
-// which handles bearer token injection from HttpOnly cookies
-const httpClient = createHttpClient({
-  baseURL: '/api/proxy',
-});
-
 // Services
 const authService = new AuthService();
 
 // Repositories
 const authRepository = new AuthRepository(supabaseBrowserClient);
-const bookRepository: IBookRepository = new BookRepository(httpClient);
-const chapterRepository: IChapterRepository = new ChapterRepository(httpClient);
-const verseRepository: IVerseRepositoryPort = new VerseRepository(httpClient);
+const bookRepository: IBookRepository = new BookRepository(
+  supabaseBrowserClient
+);
+const chapterRepository: IChapterRepository = new ChapterRepository(
+  supabaseBrowserClient
+);
+const verseRepository: IVerseRepositoryPort = new VerseRepository(
+  supabaseBrowserClient
+);
 const translationRepository: ITranslationRepository = new TranslationRepository(
-  httpClient
+  supabaseBrowserClient
 );
-const userRepository: IUserRepository = new UserRepository(httpClient);
+const userRepository: IUserRepository = new UserRepository(
+  supabaseBrowserClient
+);
 const bookmarkRepository: IBookmarkRepositoryPort = new BookmarkRepository(
-  httpClient
+  supabaseBrowserClient
 );
-const hadiRepository: IHadiRepository = new HadiRepository(httpClient);
-const statsRepository: IStatsRepository = new StatsRepository(httpClient);
+const hadiRepository: IHadiRepository = new HadiRepository(
+  supabaseBrowserClient
+);
+const statsRepository: IStatsRepository = new StatsRepository(
+  supabaseBrowserClient
+);
 
 // Use Cases - Auth
 const loginUseCase = new LoginUseCase(authRepository, authService);

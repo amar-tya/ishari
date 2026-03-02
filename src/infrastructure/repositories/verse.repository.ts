@@ -1,101 +1,104 @@
 import { IVerseRepositoryPort } from '@/application/ports';
-import { ApiSuccessResponse, failure, Result, success } from '@/core/types';
-import {
-  CreateVerseApiResponse,
-  ListVerseApiResponse,
-  UpdateVerseApiResponse,
-} from '../models';
+import { failure, Result, success } from '@/core/types';
 import {
   VerseCreateRequest,
   VerseUpdateRequest,
   VerseRequest,
 } from '@/application/dto/verse.dto';
-import { HttpClient } from '@/infrastructure/http';
 import { VerseEntity } from '@/core/entities';
 import { PaginationResponse } from '@/application';
 import { VerseMapper } from '@/infrastructure/mappers';
+import { ServerError } from '@/core/errors';
+import { SupabaseClient } from '@supabase/supabase-js';
+import {
+  ListVerseApiResponse,
+  VerseApiResponse,
+} from '@/infrastructure/models';
 
 export class VerseRepository implements IVerseRepositoryPort {
-  private readonly httpClient: HttpClient;
-
-  constructor(httpClient: HttpClient) {
-    this.httpClient = httpClient;
-  }
+  constructor(private readonly supabase: SupabaseClient) {}
 
   async find(
     criteria: VerseRequest
   ): Promise<Result<{ data: VerseEntity[]; meta: PaginationResponse }>> {
-    const queryParams = new URLSearchParams();
-    Object.entries(criteria).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        queryParams.append(key, String(value));
-      }
-    });
+    const page = criteria.page ?? 1;
+    const limit = criteria.limit ?? 10;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    const response = await this.httpClient.get<ListVerseApiResponse>(
-      `/verses?${queryParams.toString()}`
-    );
+    let query = this.supabase
+      .from('verses')
+      .select('*, chapter:chapters(*, book:books(*))', { count: 'exact' })
+      .is('deleted_at', null)
+      .range(from, to)
+      .order('verse_number', { ascending: true });
 
-    if (!response.success) {
-      return failure(response.error);
+    if (criteria.chapterId) {
+      query = query.eq('chapter_id', criteria.chapterId);
+    }
+    if (criteria.search) {
+      query = query.or(
+        `arabic_text.ilike.%${criteria.search}%,transliteration.ilike.%${criteria.search}%`
+      );
     }
 
-    // mapper data response to domain
-    const resultData = VerseMapper.toResponse(response.data.data);
+    const { data, error, count } = await query;
 
-    return success(resultData);
+    if (error) return failure(new ServerError(error.message));
+
+    const total = count ?? 0;
+    const totalPages = Math.ceil(total / limit);
+
+    const apiResponse: ListVerseApiResponse = {
+      data: (data ?? []) as VerseApiResponse[],
+      meta: {
+        total,
+        total_pages: totalPages,
+        page,
+        limit,
+        count: data?.length ?? 0,
+      },
+    };
+
+    return success(VerseMapper.toResponse(apiResponse));
   }
 
   async create(request: VerseCreateRequest): Promise<Result<VerseEntity>> {
     const apiRequest = VerseMapper.toCreateRequest(request);
-    const result = await this.httpClient.post<
-      ApiSuccessResponse<CreateVerseApiResponse>
-    >(`/verses`, apiRequest);
+    const { data, error } = await this.supabase
+      .from('verses')
+      .insert(apiRequest)
+      .select('*, chapter:chapters(*, book:books(*))')
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    const resultData = VerseMapper.toDomain(result.data.data.data);
-    return success(resultData);
+    if (error) return failure(new ServerError(error.message));
+    return success(VerseMapper.toDomain(data as VerseApiResponse));
   }
 
   async update(request: VerseUpdateRequest): Promise<Result<VerseEntity>> {
     const apiRequest = VerseMapper.toUpdateRequest(request);
-    const result = await this.httpClient.put<
-      ApiSuccessResponse<UpdateVerseApiResponse>
-    >(`/verses/${request.verseId}`, apiRequest);
+    const { data, error } = await this.supabase
+      .from('verses')
+      .update(apiRequest)
+      .eq('id', request.verseId)
+      .select('*, chapter:chapters(*, book:books(*))')
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    const resultData = VerseMapper.toDomain(result.data.data.data);
-    return success(resultData);
+    if (error) return failure(new ServerError(error.message));
+    return success(VerseMapper.toDomain(data as VerseApiResponse));
   }
 
   async delete(id: number): Promise<Result<boolean>> {
-    const result = await this.httpClient.delete<ApiSuccessResponse<void>>(
-      `/verses/${id}`
-    );
+    const { error } = await this.supabase.from('verses').delete().eq('id', id);
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
+    if (error) return failure(new ServerError(error.message));
     return success(true);
   }
 
   async bulkDelete(ids: number[]): Promise<Result<boolean>> {
-    const result = await this.httpClient.post<ApiSuccessResponse<void>>(
-      `/verses/bulk-delete`,
-      { ids }
-    );
+    const { error } = await this.supabase.from('verses').delete().in('id', ids);
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
+    if (error) return failure(new ServerError(error.message));
     return success(true);
   }
 }

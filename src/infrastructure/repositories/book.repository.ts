@@ -3,105 +3,109 @@ import {
   IBookRepository,
   ListBookDTO,
   UpdateBookDTO,
-} from "@/application";
-import { BookEntity, BookEntityList } from "@/core/entities";
-import { ServerError } from "@/core/errors";
-import { ApiSuccessResponse, failure, Result, success } from "@/core/types";
-import { HttpClient } from "@/infrastructure/http";
+} from '@/application';
+import { BookEntity, BookEntityList } from '@/core/entities';
+import { ServerError } from '@/core/errors';
+import { failure, Result, success } from '@/core/types';
+import { SupabaseClient } from '@supabase/supabase-js';
 import {
-  BookApiResponse,
   BookMapper,
+  BookApiResponse,
   ListBookApiResponse,
-} from "@/infrastructure/mappers";
+} from '@/infrastructure/mappers';
 
 export class BookRepository implements IBookRepository {
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly supabase: SupabaseClient) {}
 
   async create(dto: CreateBookDTO): Promise<Result<BookEntity>> {
-    const result = await this.httpClient.post<BookApiResponse>("/books", dto);
+    const { data, error } = await this.supabase
+      .from('books')
+      .insert({
+        title: dto.title,
+        author: dto.author ?? null,
+        description: dto.description ?? null,
+        published_year: dto.published_year ?? null,
+        cover_image_url: dto.cover_image_url ?? null,
+      })
+      .select()
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    const apiResponse = result.data.data;
-
-    if (apiResponse && typeof apiResponse === "object" && "id" in apiResponse) {
-      return success(BookMapper.toDomain(apiResponse));
-    }
-
-    return failure(new ServerError("Unexpected response format"));
+    if (error) return failure(new ServerError(error.message));
+    return success(BookMapper.toDomain(data as BookApiResponse));
   }
 
   async update(id: number, dto: UpdateBookDTO): Promise<Result<BookEntity>> {
-    const result = await this.httpClient.put<BookApiResponse>(
-      `/books/${id}`,
-      dto,
-    );
+    const { data, error } = await this.supabase
+      .from('books')
+      .update({
+        title: dto.title,
+        author: dto.author ?? null,
+        description: dto.description ?? null,
+        published_year: dto.published_year ?? null,
+        cover_image_url: dto.cover_image_url ?? null,
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    const apiResponse = result.data.data;
-
-    if (apiResponse && typeof apiResponse === "object" && "id" in apiResponse) {
-      return success(BookMapper.toDomain(apiResponse));
-    }
-
-    return failure(new ServerError("Unexpected response format"));
+    if (error) return failure(new ServerError(error.message));
+    return success(BookMapper.toDomain(data as BookApiResponse));
   }
 
   async delete(id: number): Promise<Result<void>> {
-    const result = await this.httpClient.delete<void>(`/books/${id}`);
+    const { error } = await this.supabase.from('books').delete().eq('id', id);
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    // Delete berhasil, return success dengan void
+    if (error) return failure(new ServerError(error.message));
     return success(undefined);
   }
 
   async getById(id: number): Promise<Result<BookEntity>> {
-    const result = await this.httpClient.get<BookApiResponse>(`/books/${id}`);
+    const { data, error } = await this.supabase
+      .from('books')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    const apiResponse = result.data.data;
-
-    if (apiResponse && typeof apiResponse === "object" && "id" in apiResponse) {
-      return success(BookMapper.toDomain(apiResponse));
-    }
-
-    return failure(new ServerError("Unexpected response format"));
+    if (error) return failure(new ServerError(error.message));
+    return success(BookMapper.toDomain(data as BookApiResponse));
   }
 
   async getAll(dto: ListBookDTO): Promise<Result<BookEntityList>> {
-    const params = new URLSearchParams();
-    params.append("page", dto.page.toString());
-    if (dto.limit) params.append("limit", dto.limit.toString());
-    if (dto.search) params.append("search", dto.search);
+    const page = dto.page ?? 1;
+    const limit = dto.limit ?? 10;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    // Backend returns ListBookApiResponse directly (no ApiSuccessResponse wrapper)
-    const result = await this.httpClient.get<ListBookApiResponse>(
-      `/books?${params.toString()}`,
-    );
+    let query = this.supabase
+      .from('books')
+      .select('*', { count: 'exact' })
+      .range(from, to)
+      .order('id', { ascending: false });
 
-    if (!result.success) {
-      return failure(result.error);
+    if (dto.search) {
+      query = query.or(
+        `title.ilike.%${dto.search}%,author.ilike.%${dto.search}%`
+      );
     }
 
-    // result.data is HttpResponse<ListBookApiResponse>
-    // result.data.data is the actual JSON body: { data: [...], meta: {...} }
-    const apiResponse = result.data.data;
+    const { data, error, count } = await query;
 
-    if (apiResponse && Array.isArray(apiResponse.data) && apiResponse.meta) {
-      return success(BookMapper.toEntityList(apiResponse));
-    }
+    if (error) return failure(new ServerError(error.message));
 
-    return failure(new ServerError("Unexpected response format"));
+    const total = count ?? 0;
+    const totalPages = Math.ceil(total / limit);
+
+    const apiResponse: ListBookApiResponse = {
+      data: (data ?? []) as BookApiResponse[],
+      meta: {
+        total,
+        total_pages: totalPages,
+        page,
+        limit,
+        count: data?.length ?? 0,
+      },
+    };
+
+    return success(BookMapper.toEntityList(apiResponse));
   }
 }

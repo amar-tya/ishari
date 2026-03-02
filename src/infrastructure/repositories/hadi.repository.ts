@@ -6,105 +6,98 @@ import {
 } from '@/application';
 import { HadiEntity, HadiEntityList } from '@/core/entities';
 import { ServerError } from '@/core/errors';
-import { ApiSuccessResponse, failure, Result, success } from '@/core/types';
-import { HttpClient } from '@/infrastructure/http';
+import { failure, Result, success } from '@/core/types';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { HadiApiResponse, ListHadiApiResponse } from '@/infrastructure/models';
 import { HadiMapper } from '@/infrastructure/mappers';
 
 export class HadiRepository implements IHadiRepository {
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly supabase: SupabaseClient) {}
 
-  // POST /hadis
   async create(dto: CreateHadiDTO): Promise<Result<HadiEntity>> {
-    const result = await this.httpClient.post<
-      ApiSuccessResponse<HadiApiResponse>
-    >('/hadis', dto);
+    const { data, error } = await this.supabase
+      .from('hadis')
+      .insert({
+        name: dto.name,
+        description: dto.description ?? null,
+        image_url: dto.image_url ?? null,
+      })
+      .select()
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    const apiResponse = result.data.data.data;
-
-    if (apiResponse && typeof apiResponse === 'object' && 'id' in apiResponse) {
-      return success(HadiMapper.toDomain(apiResponse));
-    }
-
-    return failure(new ServerError('Unexpected response format'));
+    if (error) return failure(new ServerError(error.message));
+    return success(HadiMapper.toDomain(data as HadiApiResponse));
   }
 
-  // PUT /hadis/{id}
   async update(id: number, dto: UpdateHadiDTO): Promise<Result<HadiEntity>> {
-    const result = await this.httpClient.put<
-      ApiSuccessResponse<HadiApiResponse>
-    >(`/hadis/${id}`, dto);
+    const { data, error } = await this.supabase
+      .from('hadis')
+      .update({
+        name: dto.name,
+        description: dto.description ?? null,
+        image_url: dto.image_url ?? null,
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    const apiResponse = result.data.data.data;
-
-    if (apiResponse && typeof apiResponse === 'object' && 'id' in apiResponse) {
-      return success(HadiMapper.toDomain(apiResponse));
-    }
-
-    return failure(new ServerError('Unexpected response format'));
+    if (error) return failure(new ServerError(error.message));
+    return success(HadiMapper.toDomain(data as HadiApiResponse));
   }
 
-  // DELETE /hadis/{id}
   async delete(id: number): Promise<Result<void>> {
-    const result = await this.httpClient.delete<ApiSuccessResponse<void>>(
-      `/hadis/${id}`
-    );
-
-    if (!result.success) {
-      return failure(result.error);
-    }
-
+    const { error } = await this.supabase.from('hadis').delete().eq('id', id);
+    if (error) return failure(new ServerError(error.message));
     return success(undefined);
   }
 
-  // GET /hadis/{id}
   async getById(id: number): Promise<Result<HadiEntity>> {
-    const result = await this.httpClient.get<
-      ApiSuccessResponse<HadiApiResponse>
-    >(`/hadis/${id}`);
+    const { data, error } = await this.supabase
+      .from('hadis')
+      .select('*')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    const apiResponse = result.data.data.data;
-
-    if (apiResponse && typeof apiResponse === 'object' && 'id' in apiResponse) {
-      return success(HadiMapper.toDomain(apiResponse));
-    }
-
-    return failure(new ServerError('Unexpected response format'));
+    if (error) return failure(new ServerError(error.message));
+    return success(HadiMapper.toDomain(data as HadiApiResponse));
   }
 
-  // GET /hadis?page=&limit=&search=
   async getAll(dto: ListHadiDTO): Promise<Result<HadiEntityList>> {
-    const params = new URLSearchParams();
-    params.append('page', dto.page.toString());
-    if (dto.limit) params.append('limit', dto.limit.toString());
-    if (dto.search) params.append('search', dto.search);
+    const page = dto.page ?? 1;
+    const limit = dto.limit ?? 10;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    const result = await this.httpClient.get<ListHadiApiResponse>(
-      `/hadis?${params.toString()}`
-    );
+    let query = this.supabase
+      .from('hadis')
+      .select('*', { count: 'exact' })
+      .is('deleted_at', null)
+      .range(from, to)
+      .order('id', { ascending: false });
 
-    if (!result.success) {
-      return failure(result.error);
+    if (dto.search) {
+      query = query.ilike('name', `%${dto.search}%`);
     }
 
-    const apiResponse = result.data.data;
+    const { data, error, count } = await query;
 
-    if (apiResponse && Array.isArray(apiResponse.data) && apiResponse.meta) {
-      return success(HadiMapper.toEntityList(apiResponse));
-    }
+    if (error) return failure(new ServerError(error.message));
 
-    return failure(new ServerError('Unexpected response format'));
+    const total = count ?? 0;
+    const totalPages = Math.ceil(total / limit);
+
+    const apiResponse: ListHadiApiResponse = {
+      data: (data ?? []) as HadiApiResponse[],
+      meta: {
+        total,
+        total_pages: totalPages,
+        page,
+        limit,
+        count: data?.length ?? 0,
+      },
+    };
+
+    return success(HadiMapper.toEntityList(apiResponse));
   }
 }

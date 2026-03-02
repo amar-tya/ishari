@@ -1,31 +1,58 @@
 import { IStatsRepository } from '@/application/ports';
 import { DashboardStatsEntity } from '@/core/entities';
 import { ServerError } from '@/core/errors';
-import { ApiSuccessResponse, failure, Result, success } from '@/core/types';
-import { HttpClient } from '@/infrastructure/http';
-import { StatsApiResponse } from '@/infrastructure/models';
+import { failure, Result, success } from '@/core/types';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { StatsMapper } from '@/infrastructure/mappers/stats.mapper';
 
 export class StatsRepository implements IStatsRepository {
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly supabase: SupabaseClient) {}
 
-  // GET /dashboard/stats
   async getDashboardStats(): Promise<Result<DashboardStatsEntity>> {
-    const result =
-      await this.httpClient.get<ApiSuccessResponse<StatsApiResponse>>(
-        '/dashboard/stats'
-      );
+    // Hitung semua stats secara paralel langsung dari Supabase
+    const [users, hadis, chapters, verses, verseMedia] = await Promise.all([
+      this.supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .is('deleted_at', null),
+      this.supabase
+        .from('hadis')
+        .select('*', { count: 'exact', head: true })
+        .is('deleted_at', null),
+      this.supabase
+        .from('chapters')
+        .select('*', { count: 'exact', head: true })
+        .is('deleted_at', null),
+      this.supabase
+        .from('verses')
+        .select('*', { count: 'exact', head: true })
+        .is('deleted_at', null),
+      this.supabase
+        .from('verse_media')
+        .select('*', { count: 'exact', head: true })
+        .is('deleted_at', null),
+    ]);
 
-    if (!result.success) {
-      return failure(result.error);
+    const errors = [
+      users.error,
+      hadis.error,
+      chapters.error,
+      verses.error,
+      verseMedia.error,
+    ].filter(Boolean);
+    if (errors.length > 0) {
+      return failure(new ServerError(errors[0]!.message));
     }
 
-    const apiResponse = result.data.data.data as unknown as StatsApiResponse;
-
-    if (apiResponse) {
-      return success(StatsMapper.toDomain(apiResponse));
-    }
-
-    return failure(new ServerError('Unexpected response format'));
+    return success(
+      StatsMapper.toDomain({
+        total_users: users.count ?? 0,
+        total_hadis: hadis.count ?? 0,
+        total_chapters: chapters.count ?? 0,
+        total_verses: verses.count ?? 0,
+        total_verse_media: verseMedia.count ?? 0,
+        calculated_at: new Date().toISOString(),
+      })
+    );
   }
 }

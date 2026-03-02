@@ -1,104 +1,94 @@
 import { IBookmarkRepositoryPort } from '@/application/ports/repository/bookmark.repository.port';
-import { ApiSuccessResponse, failure, Result, success } from '@/core/types';
-import {
-  CreateBookmarkApiResponse,
-  ListBookmarkApiResponse,
-  UpdateBookmarkApiResponse,
-} from '../models/bookmark.model';
+import { failure, Result, success } from '@/core/types';
 import {
   BookmarkCreateRequest,
   BookmarkUpdateRequest,
   BookmarkFilter,
   BookmarkResponse,
 } from '@/application/dto/bookmark.dto';
-import { HttpClient } from '@/infrastructure/http';
 import { BookmarkEntity } from '@/core/entities/bookmark.entity';
 import { BookmarkMapper } from '@/infrastructure/mappers/bookmark.mapper';
+import { ServerError } from '@/core/errors';
+import { SupabaseClient } from '@supabase/supabase-js';
+import {
+  BookmarkApiResponse,
+  ListBookmarkApiResponse,
+} from '@/infrastructure/models/bookmark.model';
 
 export class BookmarkRepository implements IBookmarkRepositoryPort {
-  private readonly httpClient: HttpClient;
-
-  constructor(httpClient: HttpClient) {
-    this.httpClient = httpClient;
-  }
+  constructor(private readonly supabase: SupabaseClient) {}
 
   async find(criteria: BookmarkFilter): Promise<Result<BookmarkResponse>> {
-    const queryParams = new URLSearchParams();
-    Object.entries(criteria).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && key !== 'userId') {
-        queryParams.append(key, String(value));
-      }
-    });
+    const page = criteria.page ?? 1;
+    const limit = criteria.limit ?? 10;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    const endpoint = criteria.userId
-      ? `/bookmarks/user/${criteria.userId}`
-      : `/bookmarks`;
+    let query = this.supabase
+      .from('bookmarks')
+      .select('*', { count: 'exact' })
+      .is('deleted_at', null)
+      .range(from, to)
+      .order('id', { ascending: false });
 
-    const response = await this.httpClient.get<ListBookmarkApiResponse>(
-      `${endpoint}?${queryParams.toString()}`
-    );
-
-    if (!response.success) {
-      return failure(response.error);
+    if (criteria.userId) {
+      query = query.eq('user_id', criteria.userId);
     }
 
-    const resultData = BookmarkMapper.toDomainList(response.data.data);
-    return success(resultData);
+    const { data, error, count } = await query;
+
+    if (error) return failure(new ServerError(error.message));
+
+    const total = count ?? 0;
+    const totalPages = Math.ceil(total / limit);
+
+    const apiResponse: ListBookmarkApiResponse = {
+      data: (data ?? []) as BookmarkApiResponse[],
+      meta: {
+        total,
+        total_pages: totalPages,
+        page,
+        limit,
+        count: data?.length ?? 0,
+      },
+    };
+
+    return success(BookmarkMapper.toDomainList(apiResponse));
   }
 
   async create(
     request: BookmarkCreateRequest
   ): Promise<Result<BookmarkEntity>> {
-    const apiRequest = {
-      verse_id: request.verseId,
-      note: request.note,
-    };
+    const { data, error } = await this.supabase
+      .from('bookmarks')
+      .insert({ verse_id: request.verseId, note: request.note })
+      .select()
+      .single();
 
-    // In Apispec, usually it's enveloped in 'data' but the actual interface might differ. By looking at Verse it returns `{ data: { data: T } }` for some reason? Let's check api result wrapping, usually generic ApiSuccessResponse<T> has `data: T`. I will assume standard format for now.
-    const result = await this.httpClient.post<
-      ApiSuccessResponse<CreateBookmarkApiResponse>
-    >(`/bookmarks`, apiRequest);
-
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    // Assuming standard format. Depending on `ApiSuccessResponse` shape, it might be nested
-    const resultData = BookmarkMapper.toDomain(
-      result.data.data.data as unknown as CreateBookmarkApiResponse
-    );
-    return success(resultData);
+    if (error) return failure(new ServerError(error.message));
+    return success(BookmarkMapper.toDomain(data as BookmarkApiResponse));
   }
 
   async update(
     request: BookmarkUpdateRequest
   ): Promise<Result<BookmarkEntity>> {
-    const apiRequest = {
-      note: request.note,
-    };
-    const result = await this.httpClient.put<
-      ApiSuccessResponse<UpdateBookmarkApiResponse>
-    >(`/bookmarks/${request.bookmarkId}`, apiRequest);
+    const { data, error } = await this.supabase
+      .from('bookmarks')
+      .update({ note: request.note })
+      .eq('id', request.bookmarkId)
+      .select()
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    const resultData = BookmarkMapper.toDomain(
-      result.data.data.data as unknown as UpdateBookmarkApiResponse
-    );
-    return success(resultData);
+    if (error) return failure(new ServerError(error.message));
+    return success(BookmarkMapper.toDomain(data as BookmarkApiResponse));
   }
 
   async delete(id: number): Promise<Result<boolean>> {
-    const result = await this.httpClient.delete<ApiSuccessResponse<void>>(
-      `/bookmarks/${id}`
-    );
-
-    if (!result.success) {
-      return failure(result.error);
-    }
-
+    const { error } = await this.supabase
+      .from('bookmarks')
+      .delete()
+      .eq('id', id);
+    if (error) return failure(new ServerError(error.message));
     return success(true);
   }
 }

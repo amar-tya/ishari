@@ -1,105 +1,96 @@
 import { IUserRepository } from '@/application/ports/repository/user.repository.port';
-import { ApiSuccessResponse, failure, Result, success } from '@/core/types';
-import {
-  UserCreateApiResponse,
-  ListUserApiResponse,
-  UserUpdateApiResponse,
-  UserApiResponse,
-} from '../models/user.model';
+import { failure, Result, success } from '@/core/types';
+import { UserApiResponse, ListUserApiResponse } from '../models/user.model';
 import {
   UserCreateRequest,
   UserUpdateRequest,
   UserRequest,
 } from '@/application/dto/user.dto';
-import { HttpClient } from '@/infrastructure/http';
 import { UserEntity } from '@/core/entities';
 import { PaginationResponse } from '@/application';
 import { UserMapper } from '@/infrastructure/mappers/user.mapper';
+import { ServerError } from '@/core/errors';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 export class UserRepository implements IUserRepository {
-  private readonly httpClient: HttpClient;
-
-  constructor(httpClient: HttpClient) {
-    this.httpClient = httpClient;
-  }
+  constructor(private readonly supabase: SupabaseClient) {}
 
   async find(
     criteria: UserRequest
   ): Promise<Result<{ data: UserEntity[]; meta: PaginationResponse }>> {
-    const queryParams = new URLSearchParams();
-    Object.entries(criteria).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        queryParams.append(key, String(value));
-      }
-    });
+    const page = criteria.page ?? 1;
+    const limit = criteria.limit ?? 10;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    const response = await this.httpClient.get<ListUserApiResponse>(
-      `/users?${queryParams.toString()}`
-    );
+    let query = this.supabase
+      .from('users')
+      .select('*', { count: 'exact' })
+      .is('deleted_at', null)
+      .range(from, to)
+      .order('id', { ascending: false });
 
-    if (!response.success) {
-      return failure(response.error);
+    if (criteria.search) {
+      query = query.or(
+        `username.ilike.%${criteria.search}%,email.ilike.%${criteria.search}%`
+      );
     }
 
-    const resultData = UserMapper.toResponse(response.data.data);
-    return success(resultData);
+    const { data, error, count } = await query;
+
+    if (error) return failure(new ServerError(error.message));
+
+    const total = count ?? 0;
+    const totalPages = Math.ceil(total / limit);
+
+    const apiResponse: ListUserApiResponse = {
+      data: (data ?? []) as UserApiResponse[],
+      meta: {
+        total,
+        total_pages: totalPages,
+        page,
+        limit,
+        count: data?.length ?? 0,
+      },
+    };
+
+    return success(UserMapper.toResponse(apiResponse));
   }
 
   async create(request: UserCreateRequest): Promise<Result<UserEntity>> {
     const apiRequest = UserMapper.toCreateRequest(request);
-    const result = await this.httpClient.post<
-      ApiSuccessResponse<UserCreateApiResponse>
-    >(`/users/register`, apiRequest);
+    const { data, error } = await this.supabase
+      .from('users')
+      .insert(apiRequest)
+      .select()
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    // Usually post returns the created item. We'll map it to domain.
-    const resultData = UserMapper.toDomain(
-      result.data.data.data as unknown as UserApiResponse
-    );
-    return success(resultData);
+    if (error) return failure(new ServerError(error.message));
+    return success(UserMapper.toDomain(data as UserApiResponse));
   }
 
   async update(request: UserUpdateRequest): Promise<Result<UserEntity>> {
     const apiRequest = UserMapper.toUpdateRequest(request);
-    const result = await this.httpClient.put<
-      ApiSuccessResponse<UserUpdateApiResponse>
-    >(`/users/${request.id}`, apiRequest);
+    const { data, error } = await this.supabase
+      .from('users')
+      .update(apiRequest)
+      .eq('id', request.id)
+      .select()
+      .single();
 
-    if (!result.success) {
-      return failure(result.error);
-    }
-
-    const resultData = UserMapper.toDomain(
-      result.data.data.data as unknown as UserApiResponse
-    );
-    return success(resultData);
+    if (error) return failure(new ServerError(error.message));
+    return success(UserMapper.toDomain(data as UserApiResponse));
   }
 
   async delete(id: number): Promise<Result<boolean>> {
-    const result = await this.httpClient.delete<ApiSuccessResponse<void>>(
-      `/users/${id}`
-    );
-
-    if (!result.success) {
-      return failure(result.error);
-    }
-
+    const { error } = await this.supabase.from('users').delete().eq('id', id);
+    if (error) return failure(new ServerError(error.message));
     return success(true);
   }
 
   async bulkDelete(ids: number[]): Promise<Result<boolean>> {
-    const result = await this.httpClient.post<ApiSuccessResponse<void>>(
-      `/users/bulk-delete`,
-      { ids }
-    );
-
-    if (!result.success) {
-      return failure(result.error);
-    }
-
+    const { error } = await this.supabase.from('users').delete().in('id', ids);
+    if (error) return failure(new ServerError(error.message));
     return success(true);
   }
 }
