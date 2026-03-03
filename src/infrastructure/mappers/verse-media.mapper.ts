@@ -23,7 +23,13 @@ export class VerseMediaMapper {
   static toEntityList(apiResponse: ListVerseMediaApiResponse) {
     return {
       data: apiResponse.data.map((item) => this.toDomain(item)),
-      meta: apiResponse.meta,
+      meta: {
+        total: apiResponse.meta.total,
+        totalPages: apiResponse.meta.total_pages,
+        page: apiResponse.meta.page,
+        limit: apiResponse.meta.limit,
+        count: apiResponse.meta.count,
+      },
     };
   }
 }

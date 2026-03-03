@@ -15,7 +15,7 @@ export interface VerseMediaEntityList {
   data: VerseMediaEntity[];
   meta: {
     total: number;
-    total_pages: number;
+    totalPages: number;
     page: number;
     limit: number;
     count: number;
