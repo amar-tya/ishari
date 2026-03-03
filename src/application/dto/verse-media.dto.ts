@@ -6,11 +6,13 @@ export interface CreateVerseMediaDTO {
   mediaType: 'audio' | 'image';
   file: File;
   description?: string;
+  type?: 'Joz' | 'Yahum' | 'Terem' | 'Inat' | 'Rojazz';
   storagePath: string; // The path to save in Supabase Storage
 }
 
 export interface UpdateVerseMediaDTO {
   description?: string;
+  type?: 'Joz' | 'Yahum' | 'Terem' | 'Inat' | 'Rojazz';
   file?: File;
   storagePath?: string;
 }
@@ -21,6 +23,7 @@ export interface ListVerseMediaDTO {
   search?: string;
   verseId?: number;
   hadiId?: number;
+  type?: 'Joz' | 'Yahum' | 'Terem' | 'Inat' | 'Rojazz';
 }
 
 export interface ListVerseMediaResponseDTO {

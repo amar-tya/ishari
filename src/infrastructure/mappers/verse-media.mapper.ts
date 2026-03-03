@@ -14,6 +14,7 @@ export class VerseMediaMapper {
       mediaUrl: apiData.media_url,
       fileSize: apiData.file_size,
       duration: apiData.duration,
+      type: apiData.type,
       description: apiData.description,
       createdAt: new Date(apiData.created_at),
       updatedAt: new Date(apiData.updated_at || apiData.created_at),

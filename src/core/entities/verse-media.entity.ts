@@ -6,6 +6,7 @@ export interface VerseMediaEntity {
   mediaUrl: string;
   fileSize: number | null;
   duration: number | null;
+  type: 'Joz' | 'Yahum' | 'Terem' | 'Inat' | 'Rojazz' | null;
   description: string | null;
   createdAt: Date;
   updatedAt: Date;

@@ -43,6 +43,9 @@ export const VerseMediaList: React.FC<VerseMediaListProps> = ({
               <th className="py-4 px-[clamp(1rem,1.5vw,1.5rem)] text-caption font-semibold text-text-secondary uppercase tracking-wider">
                 Hadi
               </th>
+              <th className="py-4 px-[clamp(1rem,1.5vw,1.5rem)] text-caption font-semibold text-text-secondary uppercase tracking-wider">
+                Type
+              </th>
               <th className="py-4 px-[clamp(1rem,1.5vw,1.5rem)] text-caption font-semibold text-text-secondary uppercase tracking-wider w-1/4">
                 Media File
               </th>
@@ -61,7 +64,7 @@ export const VerseMediaList: React.FC<VerseMediaListProps> = ({
             {mediaList.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="py-12 text-center text-text-muted text-body"
                 >
                   Tidak ada data media yang ditampilkan
@@ -84,6 +87,11 @@ export const VerseMediaList: React.FC<VerseMediaListProps> = ({
                   <td className="py-4 px-[clamp(1rem,1.5vw,1.5rem)]">
                     <div className="text-description text-text-secondary">
                       {getHadiName(media.hadiId)}
+                    </div>
+                  </td>
+                  <td className="py-4 px-[clamp(1rem,1.5vw,1.5rem)]">
+                    <div className="text-description font-medium text-primary bg-primary/5 px-2 py-1 rounded-md inline-block">
+                      {media.type || '-'}
                     </div>
                   </td>
                   <td className="py-4 px-[clamp(1rem,1.5vw,1.5rem)]">

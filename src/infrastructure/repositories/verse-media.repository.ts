@@ -53,6 +53,7 @@ export class VerseMediaRepository implements IVerseMediaRepository {
           media_type: dto.mediaType,
           media_url: mediaUrl,
           file_size: dto.file.size,
+          type: dto.type ?? null,
           description: dto.description ?? null,
         })
         .select()
@@ -107,6 +108,7 @@ export class VerseMediaRepository implements IVerseMediaRepository {
       const updatePayload: Record<string, unknown> = {};
       if (dto.description !== undefined)
         updatePayload.description = dto.description;
+      if (dto.type !== undefined) updatePayload.type = dto.type;
       if (mediaUrl !== undefined) updatePayload.media_url = mediaUrl;
       if (fileSize !== undefined) updatePayload.file_size = fileSize;
 
@@ -188,6 +190,10 @@ export class VerseMediaRepository implements IVerseMediaRepository {
 
     if (dto.hadiId) {
       query = query.eq('hadi_id', dto.hadiId);
+    }
+
+    if (dto.type) {
+      query = query.eq('type', dto.type);
     }
 
     const { data, error, count } = await query;

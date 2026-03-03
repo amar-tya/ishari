@@ -6,6 +6,7 @@ export interface VerseMediaApiResponse {
   media_url: string;
   file_size: number | null;
   duration: number | null;
+  type: 'Joz' | 'Yahum' | 'Terem' | 'Inat' | 'Rojazz' | null;
   description: string | null;
   created_at: string;
   updated_at: string;

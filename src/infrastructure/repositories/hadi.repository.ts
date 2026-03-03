@@ -16,7 +16,7 @@ export class HadiRepository implements IHadiRepository {
 
   async create(dto: CreateHadiDTO): Promise<Result<HadiEntity>> {
     const { data, error } = await this.supabase
-      .from('hadis')
+      .from('hadi')
       .insert({
         name: dto.name,
         description: dto.description ?? null,
@@ -31,7 +31,7 @@ export class HadiRepository implements IHadiRepository {
 
   async update(id: number, dto: UpdateHadiDTO): Promise<Result<HadiEntity>> {
     const { data, error } = await this.supabase
-      .from('hadis')
+      .from('hadi')
       .update({
         name: dto.name,
         description: dto.description ?? null,
@@ -46,14 +46,14 @@ export class HadiRepository implements IHadiRepository {
   }
 
   async delete(id: number): Promise<Result<void>> {
-    const { error } = await this.supabase.from('hadis').delete().eq('id', id);
+    const { error } = await this.supabase.from('hadi').delete().eq('id', id);
     if (error) return failure(new ServerError(error.message));
     return success(undefined);
   }
 
   async getById(id: number): Promise<Result<HadiEntity>> {
     const { data, error } = await this.supabase
-      .from('hadis')
+      .from('hadi')
       .select('*')
       .eq('id', id)
       .is('deleted_at', null)
@@ -70,7 +70,7 @@ export class HadiRepository implements IHadiRepository {
     const to = from + limit - 1;
 
     let query = this.supabase
-      .from('hadis')
+      .from('hadi')
       .select('*', { count: 'exact' })
       .is('deleted_at', null)
       .range(from, to)

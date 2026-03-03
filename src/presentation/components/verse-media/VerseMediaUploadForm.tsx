@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CreateVerseMediaDTO, UpdateVerseMediaDTO } from '@/application/dto';
-import { Modal, Input, TextArea, Button } from '../base';
-import { VerseMediaEntity, HadiEntityList } from '@/core/entities';
+import { Modal, TextArea, Button, SearchableSelect } from '../base';
+import { VerseMediaEntity, HadiEntityList, BookEntity } from '@/core/entities';
+import {
+  useBookViewModel,
+  useChapterViewModel,
+  useVerseViewModel,
+} from '@/presentation/view-models';
 
 export type VerseMediaFormMode = 'create' | 'edit';
 
@@ -19,9 +24,12 @@ interface VerseMediaFormProps {
 }
 
 interface FormData {
+  bookId: string;
+  chapterId: string;
   verseId: string;
   hadiId: string;
   description: string;
+  type: string;
   file: File | null;
 }
 
@@ -36,7 +44,21 @@ const VerseMediaFormInternal: React.FC<{
   hadiList: HadiEntityList | null;
   error?: string | null;
 }> = ({ onClose, onSubmit, isLoading, mode, initialData, hadiList, error }) => {
+  const { bookList, getBookList } = useBookViewModel();
+  const {
+    chapterList,
+    findChapter,
+    isLoading: isChapterLoading,
+  } = useChapterViewModel();
+  const {
+    verseList,
+    findVerse,
+    isLoading: isVerseLoading,
+  } = useVerseViewModel();
+
   const [formData, setFormData] = useState<FormData>({
+    bookId: '',
+    chapterId: '',
     verseId: mode === 'edit' && initialData ? String(initialData.verseId) : '',
     hadiId:
       mode === 'edit' && initialData?.hadiId ? String(initialData.hadiId) : '',
@@ -44,10 +66,43 @@ const VerseMediaFormInternal: React.FC<{
       mode === 'edit' && initialData?.description
         ? initialData.description
         : '',
+    type: mode === 'edit' && initialData?.type ? initialData.type : '',
     file: null,
   });
 
+  useEffect(() => {
+    if (mode === 'create') {
+      getBookList();
+    }
+  }, [mode, getBookList]);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleBookChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const bookId = e.target.value;
+    setFormData((prev) => ({ ...prev, bookId, chapterId: '', verseId: '' }));
+    if (bookId) {
+      findChapter({ bookId: Number(bookId), limit: 1000 });
+    }
+  };
+
+  const handleChapterChange = (
+    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+  ) => {
+    const chapterId = e.target.value;
+    setFormData((prev) => ({ ...prev, chapterId, verseId: '' }));
+    if (chapterId) {
+      findChapter({ bookId: Number(formData.bookId), limit: 1000 }); // Fix: added bookId if needed, though chapterId fetch might be sufficient
+      findVerse({ chapterId: Number(chapterId), limit: 1000 });
+    }
+  };
+
+  const handleVerseChange = (
+    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+  ) => {
+    const verseId = e.target.value;
+    setFormData((prev) => ({ ...prev, verseId }));
+  };
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -80,6 +135,9 @@ const VerseMediaFormInternal: React.FC<{
     if (mode === 'edit' && initialData) {
       submitData = {
         description: formData.description.trim() || undefined,
+        type:
+          (formData.type as 'Joz' | 'Yahum' | 'Terem' | 'Inat' | 'Rojazz') ||
+          undefined,
       } as UpdateVerseMediaDTO;
 
       if (formData.file) {
@@ -108,6 +166,9 @@ const VerseMediaFormInternal: React.FC<{
         hadiId: parsedHadiId,
         mediaType: 'audio',
         file: file,
+        type:
+          (formData.type as 'Joz' | 'Yahum' | 'Terem' | 'Inat' | 'Rojazz') ||
+          undefined,
         description: formData.description.trim() || undefined,
         storagePath,
       } as CreateVerseMediaDTO;
@@ -144,19 +205,84 @@ const VerseMediaFormInternal: React.FC<{
         </div>
       )}
 
+      <div className="flex flex-col gap-2">
+        <label className="text-body font-semibold text-text-primary">
+          Media Type (Optional)
+        </label>
+        <select
+          name="type"
+          className="w-full px-4 py-3 border border-border-light rounded-xl text-body bg-bg-main focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+          value={formData.type}
+          onChange={handleInputChange}
+          disabled={isLoading}
+        >
+          <option value="">Pilih Tipe...</option>
+          <option value="Joz">Joz</option>
+          <option value="Yahum">Yahum</option>
+          <option value="Terem">Terem</option>
+          <option value="Inat">Inat</option>
+          <option value="Rojazz">Rojazz</option>
+        </select>
+      </div>
+
       {mode === 'create' && (
-        <>
-          <Input
-            label="Verse ID *"
-            name="verseId"
-            type="number"
-            placeholder="ID Verse (contoh: 12)"
-            value={formData.verseId}
-            onChange={handleInputChange}
-            error={errors.verseId}
-            disabled={isLoading}
+        <div className="flex flex-col gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+          <p className="text-sm font-semibold text-primary">Pilih Ayat</p>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+              Kitab
+            </label>
+            <select
+              name="bookId"
+              className="w-full px-4 py-2.5 border border-border-light rounded-lg text-sm bg-white focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
+              value={formData.bookId}
+              onChange={handleBookChange}
+              disabled={isLoading}
+            >
+              <option value="">Pilih Kitab...</option>
+              {bookList?.data.map((b: BookEntity) => (
+                <option key={b.id} value={String(b.id)}>
+                  {b.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <SearchableSelect
+            label="Chapter / Bab"
+            placeholder={
+              formData.bookId ? 'Pilih Bab...' : 'Pilih Kitab dulu...'
+            }
+            value={formData.chapterId}
+            onChange={handleChapterChange}
+            options={
+              chapterList?.data.map((c) => ({
+                value: c.id,
+                label: `${c.chapterNumber}. ${c.title}`,
+              })) || []
+            }
+            disabled={!formData.bookId || isLoading || isChapterLoading}
+            error={errors.chapterId}
           />
-        </>
+
+          <SearchableSelect
+            label="Ayat"
+            placeholder={
+              formData.chapterId ? 'Pilih Ayat...' : 'Pilih Bab dulu...'
+            }
+            value={formData.verseId}
+            onChange={handleVerseChange}
+            options={
+              verseList?.data.map((v) => ({
+                value: v.id,
+                label: `Ayat ${v.verseNumber} - ${v.id}: ${v.arabicText.substring(0, 30)}...`,
+              })) || []
+            }
+            disabled={!formData.chapterId || isLoading || isVerseLoading}
+            error={errors.verseId}
+          />
+        </div>
       )}
 
       {mode === 'create' && (
