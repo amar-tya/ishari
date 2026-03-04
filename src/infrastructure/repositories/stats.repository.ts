@@ -16,7 +16,7 @@ export class StatsRepository implements IStatsRepository {
         .select('*', { count: 'exact', head: true })
         .is('deleted_at', null),
       this.supabase
-        .from('hadis')
+        .from('hadi')
         .select('*', { count: 'exact', head: true })
         .is('deleted_at', null),
       this.supabase
