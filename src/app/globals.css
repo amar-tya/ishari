@@ -5,6 +5,7 @@
    COLOR PALETTE
    ============================ */
 :root {
+  color-scheme: light;
   /* Primary Colors - Adjusted to be slightly softer/modern */
   --color-primary: #3aaf50;
   --color-primary-dark: #2f9444;
@@ -44,6 +45,7 @@
    TAILWIND THEME INLINE
    ============================ */
 @theme inline {
+  --variant-dark: .dark;
   --color-primary: var(--color-primary);
   --color-primary-dark: var(--color-primary-dark);
   --color-primary-light: var(--color-primary-light);
