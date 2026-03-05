@@ -12,22 +12,24 @@ import {
 } from '@/presentation/components/base/icons';
 import { VerseEntity } from '@/core/entities';
 import { toArabicNumber } from '@/shared/utils/arabicText';
+import { useAudioPlayerStore } from '@/presentation/stores/useAudioPlayerStore';
 
 interface VerseItemProps {
   verse: VerseEntity;
-  index: number;
   showTranslation: boolean;
   onPlayClick?: (verse: VerseEntity) => void;
 }
 
 export function VerseItem({
   verse,
-  index,
   showTranslation,
   onPlayClick,
 }: VerseItemProps) {
-  // Mock progress for demonstration purposes
-  const progress = index === 0 ? 35 : 0;
+  const currentTrack = useAudioPlayerStore((state) => state.currentTrack);
+  const globalProgress = useAudioPlayerStore((state) => state.progress);
+
+  const isPlayingThisVerse = currentTrack?.verseId === verse.id;
+  const progress = isPlayingThisVerse ? globalProgress : 0;
 
   return (
     <div
@@ -56,12 +58,21 @@ export function VerseItem({
             >
               {verse.arabicText}
             </p>
+            {/* Audio Indicator */}
+            {progress > 0 && (
+              <div className="w-full h-[3px] bg-[#e6f7eb] rounded-full mt-4 md:mt-6 relative">
+                <div
+                  className="absolute top-0 right-0 h-full bg-[#51c878] rounded-full transition-all duration-300 ease-in-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            )}
           </div>
           {showTranslation && (
             <div className="pt-2">
               <p className="text-slate-600 text-[clamp(0.875rem,1.5vw,1rem)] leading-relaxed font-normal">
                 {verse.transliteration ||
-                  'Sistem belum memuat terjemahan untuk ayat ini.'}
+                  'Sistem belum memuat transliterasi untuk ayat ini.'}
               </p>
             </div>
           )}

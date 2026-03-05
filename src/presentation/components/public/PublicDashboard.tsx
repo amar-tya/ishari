@@ -105,11 +105,10 @@ export function PublicDashboard() {
             </div>
           ) : (
             <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-slate-100 overflow-hidden">
-              {verses.map((verse, index) => (
+              {verses.map((verse) => (
                 <VerseItem
                   key={verse.id}
                   verse={verse}
-                  index={index}
                   showTranslation={showTranslation}
                   onPlayClick={handlePlayClick}
                 />
