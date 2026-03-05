@@ -28,6 +28,7 @@ export class VerseMapper {
         ? apiData.verse_media.map((media) => ({
             id: media.id,
             mediaType: media.media_type,
+            hadiId: media.hadi_id,
           }))
         : undefined,
     };

@@ -9,5 +9,5 @@ export interface VerseEntity {
   transliteration: string;
   createdAt: string;
   updatedAt: string;
-  verseMedia?: { id: number; mediaType: string }[];
+  verseMedia?: { id: number; mediaType: string; hadiId?: number | null }[];
 }

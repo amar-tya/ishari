@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { VerseEntity, HadiEntity, VerseMediaEntity } from '@/core/entities';
 import { useHadi, useVerseMedia } from '@/presentation/hooks';
 import { useAudioPlayerStore } from '@/presentation/stores/useAudioPlayerStore';
@@ -49,10 +49,33 @@ export function VerseActionSheet({
     }
   }, [isOpen, listHadi]);
 
-  // Load media whenever verse or selected Hadi changes
+  // Compute available Hadis based on verseMedia
+  const availableHadis = useMemo(() => {
+    if (!verse || !verse.verseMedia) return [];
+
+    // Get all unique hadiIds from audio media associated with this verse
+    const hadiIdsWithAudio = new Set(
+      verse.verseMedia
+        .filter(
+          (m) =>
+            m.mediaType === 'audio' &&
+            m.hadiId !== undefined &&
+            m.hadiId !== null
+        )
+        .map((m) => m.hadiId)
+    );
+
+    return hadis.filter((hadi) => hadiIdsWithAudio.has(hadi.id));
+  }, [verse, hadis]);
+
+  // Load media whenever verse or effectiveHadiId changes
   useEffect(() => {
     const fetchMedia = async () => {
-      if (!verse || !selectedHadiId) {
+      // Calculate effective id here as well since we don't pass it in the deps explicitly inside the hook body
+      const currentHadiId =
+        selectedHadiId ||
+        (availableHadis.length > 0 ? availableHadis[0].id : null);
+      if (!verse || !currentHadiId) {
         setVerseMedia([]);
         setSelectedMedia(null);
         return;
@@ -62,21 +85,42 @@ export function VerseActionSheet({
         page: 1,
         limit: 50,
         verseId: verse.id,
-        hadiId: selectedHadiId,
+        hadiId: currentHadiId,
       });
       if (res.success) {
-        setVerseMedia(res.data.data.filter((m) => m.mediaType === 'audio'));
+        const audioMedia = res.data.data.filter((m) => m.mediaType === 'audio');
+        setVerseMedia(audioMedia);
+        // Auto-select first media if available
+        if (audioMedia.length > 0) {
+          setSelectedMedia(audioMedia[0]);
+        }
       }
       setLoadingMedia(false);
     };
 
     fetchMedia();
-  }, [verse, selectedHadiId, listVerseMedia]);
+  }, [verse, selectedHadiId, availableHadis, listVerseMedia]);
+
+  // Handle auto-selection in render instead of useEffect to avoid cascading updates,
+  // or use a separate selected state handler.
+  const effectiveHadiId =
+    selectedHadiId || (availableHadis.length > 0 ? availableHadis[0].id : null);
+
+  const handleHadiSelect = (id: number) => {
+    setSelectedHadiId(id);
+    setSelectedMedia(null); // Reset media when hadi changes
+  };
+
+  const handleClose = () => {
+    setSelectedHadiId(null);
+    setSelectedMedia(null);
+    onClose();
+  };
 
   const handlePlay = () => {
-    if (!verse || !selectedHadiId || !selectedMedia) return;
+    if (!verse || !effectiveHadiId || !selectedMedia) return;
 
-    const hadi = hadis.find((h) => h.id === selectedHadiId);
+    const hadi = hadis.find((h) => h.id === effectiveHadiId);
 
     setTrack({
       verseId: verse.id,
@@ -87,7 +131,7 @@ export function VerseActionSheet({
       mediaUrl: selectedMedia.mediaUrl,
     });
 
-    onClose();
+    handleClose();
   };
 
   if (!isOpen || !verse) return null;
@@ -97,7 +141,7 @@ export function VerseActionSheet({
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] transition-opacity duration-300"
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       {/* Bottom Sheet */}
@@ -110,15 +154,15 @@ export function VerseActionSheet({
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-bold text-slate-900">
-                Audio Selection Hub
+                Pusat Pilihan Audio
               </h2>
               <p className="text-sm text-slate-500">
-                Personalize your recitation for {verse.chapter?.title} - Ayat{' '}
+                Pilih bacaan untuk {verse.chapter?.title} - Ayat{' '}
                 {toArabicNumber(verse.verseNumber)}
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="size-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
             >
               ✕
@@ -129,47 +173,53 @@ export function VerseActionSheet({
             {/* Hadi Selection */}
             <div>
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-                Select Qari (Hadi)
+                Pilih Pimpinan Hadi
               </h3>
               {loadingHadis ? (
                 <div className="animate-spin size-5 border-2 border-[#51c878] border-t-transparent rounded-full" />
               ) : (
                 <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
-                  {hadis.map((hadi) => (
-                    <button
-                      key={hadi.id}
-                      onClick={() => setSelectedHadiId(hadi.id)}
-                      className={`shrink-0 w-24 p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
-                        selectedHadiId === hadi.id
-                          ? 'border-[#51c878] bg-[#51c878]/5'
-                          : 'border-slate-100 hover:border-slate-200 bg-white'
-                      }`}
-                    >
-                      <div className="size-12 rounded-full bg-slate-100 overflow-hidden relative">
-                        {hadi.imageUrl ? (
-                          <Image
-                            src={hadi.imageUrl}
-                            alt={hadi.name}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400 text-lg font-bold">
-                            {hadi.name.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-xs font-semibold text-center leading-tight line-clamp-2 text-slate-700">
-                        {hadi.name}
-                      </span>
-                    </button>
-                  ))}
+                  {availableHadis.length > 0 ? (
+                    availableHadis.map((hadi) => (
+                      <button
+                        key={hadi.id}
+                        onClick={() => handleHadiSelect(hadi.id)}
+                        className={`shrink-0 w-24 p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
+                          effectiveHadiId === hadi.id
+                            ? 'border-[#51c878] bg-[#51c878]/5'
+                            : 'border-slate-100 hover:border-slate-200 bg-white'
+                        }`}
+                      >
+                        <div className="size-12 rounded-full bg-slate-100 overflow-hidden relative">
+                          {hadi.imageUrl ? (
+                            <Image
+                              src={hadi.imageUrl}
+                              alt={hadi.name}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400 text-lg font-bold">
+                              {hadi.name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs font-semibold text-center leading-tight line-clamp-2 text-slate-700">
+                          {hadi.name}
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-slate-500 w-full text-center py-4">
+                      Belum ada audio untuk ayat ini.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
 
             {/* Audio Type Selection */}
-            {selectedHadiId && (
+            {effectiveHadiId && (
               <div>
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
                   Recitation Style
@@ -205,9 +255,9 @@ export function VerseActionSheet({
           <div className="mt-4 pt-4 border-t border-slate-100">
             <button
               onClick={handlePlay}
-              disabled={!selectedHadiId || !selectedMedia}
+              disabled={!effectiveHadiId || !selectedMedia}
               className={`w-full h-12 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
-                selectedHadiId && selectedMedia
+                effectiveHadiId && selectedMedia
                   ? 'bg-[#51c878] text-white hover:bg-[#3da35f] shadow-lg shadow-[#51c878]/30'
                   : 'bg-slate-100 text-slate-400 cursor-not-allowed'
               }`}

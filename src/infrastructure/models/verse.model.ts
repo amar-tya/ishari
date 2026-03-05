@@ -22,7 +22,7 @@ export interface VerseApiResponse {
   transliteration: string;
   created_at: string;
   updated_at: string;
-  verse_media?: { id: number; media_type: string }[];
+  verse_media?: { id: number; media_type: string; hadi_id?: number | null }[];
 }
 
 export interface CreateVerseApiResponse {

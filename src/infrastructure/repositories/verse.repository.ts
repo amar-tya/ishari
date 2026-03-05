@@ -29,7 +29,7 @@ export class VerseRepository implements IVerseRepositoryPort {
     let query = this.supabase
       .from('verses')
       .select(
-        '*, chapter:chapters(*, book:books(*)), verse_media(id, media_type)',
+        '*, chapter:chapters(*, book:books(*)), verse_media(id, media_type, hadi_id)',
         { count: 'exact' }
       )
       .is('deleted_at', null)
@@ -72,7 +72,7 @@ export class VerseRepository implements IVerseRepositoryPort {
       .from('verses')
       .insert(apiRequest)
       .select(
-        '*, chapter:chapters(*, book:books(*)), verse_media(id, media_type)'
+        '*, chapter:chapters(*, book:books(*)), verse_media(id, media_type, hadi_id)'
       )
       .single();
 
@@ -87,7 +87,7 @@ export class VerseRepository implements IVerseRepositoryPort {
       .update(apiRequest)
       .eq('id', request.verseId)
       .select(
-        '*, chapter:chapters(*, book:books(*)), verse_media(id, media_type)'
+        '*, chapter:chapters(*, book:books(*)), verse_media(id, media_type, hadi_id)'
       )
       .single();
 
