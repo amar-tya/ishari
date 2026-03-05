@@ -222,4 +222,48 @@ export class VerseMediaRepository implements IVerseMediaRepository {
 
     return success(VerseMediaMapper.toEntityList(apiResponse));
   }
+
+  async getRandomWithAudio(): Promise<Result<VerseMediaEntity>> {
+    try {
+      // 1. Get count of audio media
+      const { count, error: countError } = await this.supabase
+        .from('verse_media')
+        .select('*', { count: 'exact', head: true })
+        .eq('media_type', 'audio')
+        .is('deleted_at', null);
+
+      if (countError) throw new Error(countError.message);
+      if (!count || count === 0) throw new Error('No audio media found');
+
+      // 2. Pick random index
+      const randomIndex = Math.floor(Math.random() * count);
+
+      // 3. Fetch that specific record with joins
+      const { data, error } = await this.supabase
+        .from('verse_media')
+        .select(
+          `
+          *,
+          verses (
+            *,
+            chapters (*)
+          ),
+          hadi (*)
+        `
+        )
+        .eq('media_type', 'audio')
+        .is('deleted_at', null)
+        .range(randomIndex, randomIndex)
+        .single();
+
+      if (error) throw new Error(error.message);
+
+      return success(
+        VerseMediaMapper.toDomain(data as unknown as VerseMediaApiResponse)
+      );
+    } catch (error) {
+      const err = error as Error;
+      return failure(new ServerError(err.message));
+    }
+  }
 }

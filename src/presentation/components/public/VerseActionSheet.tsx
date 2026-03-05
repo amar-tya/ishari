@@ -81,7 +81,7 @@ export function VerseActionSheet({
     setTrack({
       verseId: verse.id,
       verseNumber: verse.verseNumber,
-      chapterTitle: verse.chapter.title,
+      chapterTitle: verse.chapter?.title || 'Unknown',
       hadiName: hadi?.name || 'Unknown',
       audioType: selectedMedia.type || 'Default',
       mediaUrl: selectedMedia.mediaUrl,
@@ -113,7 +113,7 @@ export function VerseActionSheet({
                 Audio Selection Hub
               </h2>
               <p className="text-sm text-slate-500">
-                Personalize your recitation for {verse.chapter.title} - Ayat{' '}
+                Personalize your recitation for {verse.chapter?.title} - Ayat{' '}
                 {toArabicNumber(verse.verseNumber)}
               </p>
             </div>

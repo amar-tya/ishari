@@ -40,6 +40,7 @@ import {
   DeleteVerseMediaUseCase,
   FindVerseMediaUseCase,
   ListVerseMediaUseCase,
+  GetRandomVerseMediaUseCase,
 } from '@/application/usecases';
 import {
   IBookRepository,
@@ -189,6 +190,9 @@ const deleteVerseMediaUseCase = new DeleteVerseMediaUseCase(
 );
 const findVerseMediaUseCase = new FindVerseMediaUseCase(verseMediaRepository);
 const listVerseMediaUseCase = new ListVerseMediaUseCase(verseMediaRepository);
+const getRandomVerseMediaUseCase = new GetRandomVerseMediaUseCase(
+  verseMediaRepository
+);
 
 /**
  * Container exports
@@ -255,6 +259,7 @@ export const container = {
   deleteVerseMediaUseCase,
   findVerseMediaUseCase,
   listVerseMediaUseCase,
+  getRandomVerseMediaUseCase,
 
   // Services
   authService,

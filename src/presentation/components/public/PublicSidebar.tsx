@@ -2,12 +2,13 @@
 
 import React from 'react';
 import {
-  PlayIcon,
   SparklesIcon,
   PlayCircleIcon,
   TranslationsIcon,
 } from '@/presentation/components/base/icons';
-import { ChapterEntity } from '@/core/entities';
+import { ChapterEntity, VerseMediaEntity } from '@/core/entities';
+import { useVerseMedia } from '@/presentation/hooks/useVerseMedia';
+import { useAudioPlayerStore } from '@/presentation/stores/useAudioPlayerStore';
 
 interface PublicSidebarProps {
   chapter: ChapterEntity | null;
@@ -20,6 +21,38 @@ export function PublicSidebar({
   showTranslation,
   setShowTranslation,
 }: PublicSidebarProps) {
+  const { getRandomVerseMedia } = useVerseMedia();
+  const { setTrack } = useAudioPlayerStore();
+  const [suggestion, setSuggestion] = React.useState<VerseMediaEntity | null>(
+    null as VerseMediaEntity | null
+  );
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchSuggestion() {
+      setLoading(true);
+      const result = await getRandomVerseMedia();
+      if (result.success) {
+        setSuggestion(result.data);
+      }
+      setLoading(false);
+    }
+    fetchSuggestion();
+  }, [getRandomVerseMedia]);
+
+  const handlePlaySuggestion = () => {
+    if (suggestion && suggestion.verse && suggestion.mediaUrl) {
+      setTrack({
+        verseId: suggestion.verse.id,
+        verseNumber: suggestion.verse.verseNumber,
+        chapterTitle: suggestion.verse.chapter?.title || 'Unknown',
+        hadiName: suggestion.hadi?.name || 'Unknown',
+        audioType: suggestion.type || 'Default',
+        mediaUrl: suggestion.mediaUrl,
+      });
+    }
+  };
+
   return (
     <aside className="hidden lg:block lg:col-span-3 space-y-6">
       <div className="sticky top-28">
@@ -33,10 +66,10 @@ export function PublicSidebar({
           <p className="text-[#475569] text-sm mb-4">
             {chapter?.title || 'Unknown'} • {chapter?.totalVerses || 0} Verses
           </p>
-          <button className="w-full h-12 bg-[#51c878] hover:bg-[#3da35f] text-white rounded-xl shadow-lg shadow-[#51c878]/30 flex items-center justify-center gap-2 transition-all font-semibold active:scale-95 mb-3">
+          {/* <button className="w-full h-12 bg-[#51c878] hover:bg-[#3da35f] text-white rounded-xl shadow-lg shadow-[#51c878]/30 flex items-center justify-center gap-2 transition-all font-semibold active:scale-95 mb-3">
             <PlayIcon size={24} />
             Play Full Surah
-          </button>
+          </button> */}
           <button
             onClick={() => setShowTranslation(!showTranslation)}
             className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl transition-all font-semibold border ${
@@ -59,25 +92,54 @@ export function PublicSidebar({
               Smart Suggest
             </span>
           </div>
-          <h3 className="font-bold text-lg mb-2">Evening Recitation</h3>
-          <p className="text-slate-300 text-sm mb-4 leading-relaxed">
-            Based on the time (8:00 PM), we suggest a calm, slower recitation
-            style.
-          </p>
-          <div className="flex items-center gap-3 bg-white/10 rounded-lg p-2 backdrop-blur-sm border border-white/5 cursor-pointer hover:bg-white/20 transition-all">
-            <div
-              className="size-10 rounded-full bg-cover bg-center"
-              style={{
-                backgroundImage:
-                  "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAjPGDdukRwTIR_LXbXcCY3hQbNUidml59_ihoVYkzz_IKogQ88eDdyzQ_d6uBP7b4UW9vO-q0b9CQ5LAKsGcnXnIKSjjMF2BFc-r5Gv3L1seqwgFQNgQ0XgIYVvF5PK2DHYVY2UdR5FwJeFEISn2AuMVX-v_S8dYDSNeYVAHLJ_5BpwaxpjdsMkktqbcD-r1OOZ3jH8_7mxvd8Aqp92rT8hUe74OGRimxswqbZYdfkTtWjfoM5ZThGNgGS-5axlaSexvW2tC4NyaY')",
-              }}
-            ></div>
-            <div>
-              <p className="text-sm font-semibold">Mishary Alafasy</p>
-              <p className="text-xs text-slate-400">Calm Mode</p>
+
+          {loading ? (
+            <div className="animate-pulse space-y-3">
+              <div className="h-6 bg-white/10 rounded w-3/4"></div>
+              <div className="h-4 bg-white/10 rounded w-full"></div>
+              <div className="h-14 bg-white/10 rounded-lg w-full"></div>
             </div>
-            <PlayCircleIcon size={24} className="ml-auto text-[#51c878]" />
-          </div>
+          ) : suggestion ? (
+            <>
+              <h3 className="font-bold text-lg mb-2">
+                {suggestion.verse?.chapter?.title || 'Beautiful Verse'}
+              </h3>
+              <p className="text-slate-300 text-sm mb-4 leading-relaxed line-clamp-2">
+                Verse {suggestion.verse?.verseNumber}:{' '}
+                {suggestion.verse?.transliteration || 'Reading suggestion...'}
+              </p>
+              <div
+                onClick={handlePlaySuggestion}
+                className="flex items-center gap-3 bg-white/10 rounded-lg p-2 backdrop-blur-sm border border-white/5 cursor-pointer hover:bg-white/20 transition-all"
+              >
+                <div
+                  className="size-10 rounded-full bg-cover bg-center bg-slate-700 flex items-center justify-center text-[#51c878]"
+                  style={
+                    suggestion.hadi?.imageUrl
+                      ? {
+                          backgroundImage: `url('${suggestion.hadi.imageUrl}')`,
+                        }
+                      : {}
+                  }
+                >
+                  {!suggestion.hadi?.imageUrl && <PlayCircleIcon size={24} />}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold truncate max-w-[120px]">
+                    {suggestion.hadi?.name || 'Unknown Qari'}
+                  </p>
+                  <p className="text-xs text-slate-400 capitalize">
+                    {suggestion.type || 'Recitation'}
+                  </p>
+                </div>
+                <PlayCircleIcon size={24} className="ml-auto text-[#51c878]" />
+              </div>
+            </>
+          ) : (
+            <p className="text-slate-400 text-sm italic">
+              No suggestions available at the moment.
+            </p>
+          )}
         </div>
       </div>
     </aside>

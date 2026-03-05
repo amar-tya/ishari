@@ -33,11 +33,16 @@ export const useVerseMedia = () => {
     return await container.findVerseMediaUseCase.execute(id);
   }, []);
 
+  const getRandomVerseMedia = useCallback(async () => {
+    return await container.getRandomVerseMediaUseCase.execute();
+  }, []);
+
   return {
     listVerseMedia,
     uploadVerseMedia,
     updateVerseMedia,
     deleteVerseMedia,
     findVerseMedia,
+    getRandomVerseMedia,
   };
 };

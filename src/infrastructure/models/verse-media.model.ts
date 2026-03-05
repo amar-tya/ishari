@@ -10,6 +10,31 @@ export interface VerseMediaApiResponse {
   description: string | null;
   created_at: string;
   updated_at: string;
+  verses?: {
+    id: number;
+    chapter_id: number;
+    verse_number: number;
+    arabic_text: string;
+    transliteration: string;
+    created_at: string;
+    updated_at: string;
+    chapters?: {
+      id: number;
+      book_id: number;
+      chapter_number: number;
+      title: string;
+      category: string;
+      description: string;
+      total_verses: number;
+      created_at: string;
+      updated_at: string;
+    };
+  };
+  hadi?: {
+    id: number;
+    name: string;
+    image_url: string | null;
+  };
 }
 
 export interface ListVerseMediaApiResponse {

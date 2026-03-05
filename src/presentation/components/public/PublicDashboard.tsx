@@ -9,7 +9,6 @@ import { VerseItem } from './VerseItem';
 import { PublicAudioPlayer } from './PublicAudioPlayer';
 import { VerseActionSheet } from './VerseActionSheet';
 import {
-  PlayIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   TranslationsIcon,

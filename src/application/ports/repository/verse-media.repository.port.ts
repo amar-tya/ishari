@@ -15,4 +15,5 @@ export interface IVerseMediaRepository {
   delete(id: number, storagePath: string): Promise<Result<void>>;
   getById(id: number): Promise<Result<VerseMediaEntity>>;
   getAll(dto: ListVerseMediaDTO): Promise<Result<VerseMediaEntityList>>;
+  getRandomWithAudio(): Promise<Result<VerseMediaEntity>>;
 }

@@ -3,7 +3,7 @@ import { ChapterEntity } from './chapter.entity';
 export interface VerseEntity {
   id: number;
   chapterId: number;
-  chapter: ChapterEntity;
+  chapter?: ChapterEntity;
   verseNumber: number;
   arabicText: string;
   transliteration: string;

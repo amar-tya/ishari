@@ -1,3 +1,5 @@
+import { VerseEntity } from './verse.entity';
+
 export interface VerseMediaEntity {
   id: number;
   verseId: number;
@@ -10,6 +12,12 @@ export interface VerseMediaEntity {
   description: string | null;
   createdAt: Date;
   updatedAt: Date;
+  verse?: VerseEntity;
+  hadi?: {
+    id: number;
+    name: string;
+    imageUrl: string | null;
+  };
 }
 
 export interface VerseMediaEntityList {
