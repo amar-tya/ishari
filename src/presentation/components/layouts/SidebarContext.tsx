@@ -1,19 +1,31 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from 'react';
 
 interface SidebarContextType {
   isCollapsed: boolean;
   toggleSidebar: () => void;
   expandSidebar: () => void;
   collapseSidebar: () => void;
+  isMobileMenuOpen: boolean;
+  openMobileMenu: () => void;
+  closeMobileMenu: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
-export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   // Start with false to ensure consistent SSR/client initial render
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const hasMounted = useRef(false);
 
   // Only run client-specific logic after hydration is complete
@@ -23,9 +35,9 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
     hasMounted.current = true;
 
     const checkScreenSize = () => {
-      const isMobile = window.innerWidth < 768;
+      const isMobile = window.innerWidth < 1024; // Align with lg: breakpoint
       const savedState = localStorage.getItem('sidebar-collapsed');
-      
+
       if (isMobile) {
         setIsCollapsed(true);
       } else if (savedState) {
@@ -37,15 +49,17 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
     checkScreenSize();
 
     const handleResize = () => {
-      if (window.innerWidth < 768) {
+      if (window.innerWidth < 1024) {
         setIsCollapsed(true);
+      }
+      if (window.innerWidth >= 1024) {
+        setIsMobileMenuOpen(false);
       }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
 
   const toggleSidebar = () => {
     const newState = !isCollapsed;
@@ -63,8 +77,21 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
     localStorage.setItem('sidebar-collapsed', 'true');
   };
 
+  const openMobileMenu = () => setIsMobileMenuOpen(true);
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
   return (
-    <SidebarContext.Provider value={{ isCollapsed, toggleSidebar, expandSidebar, collapseSidebar }}>
+    <SidebarContext.Provider
+      value={{
+        isCollapsed,
+        toggleSidebar,
+        expandSidebar,
+        collapseSidebar,
+        isMobileMenuOpen,
+        openMobileMenu,
+        closeMobileMenu,
+      }}
+    >
       {children}
     </SidebarContext.Provider>
   );

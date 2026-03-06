@@ -179,13 +179,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div
-        className="grid gap-4"
-        style={{
-          gridTemplateColumns:
-            'repeat(auto-fit, minmax(clamp(140px, 15vw, 200px), 1fr))',
-        }}
-      >
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {isLoadingStats
           ? // Skeleton loading placeholders
             Array.from({ length: 5 }).map((_, index) => (
@@ -209,24 +203,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div
-        className="grid gap-6"
-        style={{
-          gridTemplateColumns: 'minmax(0, 1fr) clamp(280px, 25vw, 360px)',
-        }}
-      >
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_clamp(280px,25vw,360px)] gap-6">
         {/* Left Column */}
         <div className="space-y-6">
           {/* Quick Actions */}
           <div>
             <h2 className="text-title mb-4">Quick Actions</h2>
-            <div
-              className="grid gap-4"
-              style={{
-                gridTemplateColumns:
-                  'repeat(auto-fit, minmax(clamp(100px, 12vw, 140px), 1fr))',
-              }}
-            >
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {quickActions.map((action, index) => (
                 <QuickActionCard
                   key={index}

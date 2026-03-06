@@ -11,6 +11,7 @@ import {
   // SearchIcon,
   MenuIcon,
   CloseIcon,
+  DashboardIcon,
 } from '@/presentation/components/base/icons';
 
 export function PublicNavbar() {
@@ -119,6 +120,16 @@ export function PublicNavbar() {
                   )}
                 </div>
                 <div className="py-1">
+                  {user && user.role !== 'user' && (
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 border-b border-slate-50"
+                    >
+                      <DashboardIcon size={16} className="text-[#51c878]" />
+                      Dashboard
+                    </Link>
+                  )}
                   {user ? (
                     <button
                       onClick={() => {
@@ -187,6 +198,16 @@ export function PublicNavbar() {
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-100 shadow-xl p-6 animate-in slide-in-from-top duration-200">
           <nav className="flex flex-col gap-5">
+            {user && user.role !== 'user' && (
+              <Link
+                href="/dashboard"
+                className="text-lg font-semibold text-[#51c878] transition-colors border-b border-slate-50 pb-2 flex items-center gap-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <DashboardIcon size={20} />
+                Dashboard Admin
+              </Link>
+            )}
             {navLinks.map((link) => (
               <Link
                 key={link.label}

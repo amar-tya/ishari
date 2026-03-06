@@ -25,9 +25,10 @@ const DashboardContent: React.FC<DashboardLayoutProps> = ({
       <Sidebar />
       <TopBar title={title} breadcrumbs={breadcrumbs} />
       <div
-        className="flex flex-col min-h-[calc(100vh-64px)]"
+        className="flex flex-col min-h-[calc(100vh-64px)] lg:ml-[var(--sidebar-margin)]"
         style={{
-          marginLeft,
+          // @ts-expect-error - CSS variable mapping
+          '--sidebar-margin': marginLeft,
           transition: 'margin-left 0.3s ease-in-out',
         }}
       >

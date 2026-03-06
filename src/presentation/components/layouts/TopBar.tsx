@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SearchInput, Avatar } from '../base';
-import { BellIcon, ChevronRightIcon } from '../base/icons';
+import { BellIcon, ChevronRightIcon, MenuIcon, HomeIcon } from '../base/icons';
 import { useSidebar } from './SidebarContext';
 import { useUser } from '@/presentation/hooks';
 import { useAuth } from '@/presentation/hooks/useAuth';
@@ -18,7 +18,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Dashboard' }],
 }) => {
   const router = useRouter();
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, openMobileMenu } = useSidebar();
   const marginLeft = isCollapsed ? '80px' : 'clamp(240px, 20vw, 280px)';
   const user = useUser();
   const { logout } = useAuth();
@@ -48,38 +48,48 @@ export const TopBar: React.FC<TopBarProps> = ({
         flex items-center justify-between
         sticky top-0 z-30
         transition-all duration-300 ease-in-out
+        lg:ml-[var(--sidebar-margin)]
       "
       style={{
         padding: '0.75rem clamp(1rem, 2vw, 1.5rem)',
-        marginLeft,
+        // @ts-expect-error - CSS variable mapping
+        '--sidebar-margin': marginLeft,
       }}
     >
       {/* Left: Title & Breadcrumbs */}
-      <div>
-        <h1 className="text-title">{title}</h1>
-        <nav className="flex items-center gap-1 mt-0.5">
-          {breadcrumbs.map((item, index) => (
-            <React.Fragment key={item.label}>
-              {item.href ? (
-                <a
-                  href={item.href}
-                  className="text-caption text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
-                >
-                  {item.label}
-                </a>
-              ) : (
-                <span className="text-caption text-[var(--color-text-secondary)]">
-                  {item.label}
-                </span>
-              )}
-              {index < breadcrumbs.length - 1 && (
-                <span className="text-[var(--color-text-muted)]">
-                  <ChevronRightIcon size={12} />
-                </span>
-              )}
-            </React.Fragment>
-          ))}
-        </nav>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={openMobileMenu}
+          className="lg:hidden p-2 -ml-2 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors"
+        >
+          <MenuIcon size={24} />
+        </button>
+        <div>
+          <h1 className="text-title">{title}</h1>
+          <nav className="flex items-center gap-1 mt-0.5">
+            {breadcrumbs.map((item, index) => (
+              <React.Fragment key={item.label}>
+                {item.href ? (
+                  <a
+                    href={item.href}
+                    className="text-caption text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <span className="text-caption text-[var(--color-text-secondary)]">
+                    {item.label}
+                  </span>
+                )}
+                {index < breadcrumbs.length - 1 && (
+                  <span className="text-[var(--color-text-muted)]">
+                    <ChevronRightIcon size={12} />
+                  </span>
+                )}
+              </React.Fragment>
+            ))}
+          </nav>
+        </div>
       </div>
 
       {/* Right: Search, Notifications, Profile */}
@@ -87,6 +97,21 @@ export const TopBar: React.FC<TopBarProps> = ({
         className="flex items-center"
         style={{ gap: 'clamp(0.75rem, 1.5vw, 1.5rem)' }}
       >
+        {/* Public View Link */}
+        <button
+          onClick={() => router.push('/')}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-bg-hover)] transition-all group"
+          title="Lihat Halaman Publik"
+        >
+          <HomeIcon
+            size={20}
+            className="group-hover:scale-110 transition-transform"
+          />
+          <span className="hidden xl:block text-sm font-medium">
+            Public View
+          </span>
+        </button>
+
         {/* Search */}
         <SearchInput
           className="hidden md:block"

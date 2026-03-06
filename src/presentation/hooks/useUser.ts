@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { User } from '@/core/entities';
 import { supabaseBrowserClient } from '@/infrastructure/supabase';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 /**
  * useUser Hook
@@ -16,6 +17,30 @@ export function useUser(): User | null {
 
   useEffect(() => {
     let mounted = true;
+
+    async function fetchUserFromDb(supabaseUser: SupabaseUser): Promise<User> {
+      // Fetch user data from public.users table to get the actual role
+      const { data: dbUser } = await supabaseBrowserClient
+        .from('users')
+        .select('*')
+        .eq('email', supabaseUser.email)
+        .single();
+
+      return {
+        id: dbUser?.id ?? supabaseUser.id,
+        email: supabaseUser.email ?? '',
+        username:
+          dbUser?.username ??
+          supabaseUser.user_metadata?.username ??
+          supabaseUser.email ??
+          '',
+        role: dbUser?.role ?? supabaseUser.user_metadata?.role ?? 'user',
+        is_active: dbUser?.is_active ?? true,
+        last_login_at: supabaseUser.last_sign_in_at ?? new Date().toISOString(),
+        created_at: supabaseUser.created_at ?? '',
+        updated_at: supabaseUser.updated_at ?? '',
+      };
+    }
 
     async function fetchUser() {
       // Get the current session user directly from Supabase
@@ -31,20 +56,8 @@ export function useUser(): User | null {
         return;
       }
 
-      // Map Supabase User to our App User entity
-      const appUser: User = {
-        id: supabaseUser.id,
-        email: supabaseUser.email ?? '',
-        username:
-          supabaseUser.user_metadata?.username ?? supabaseUser.email ?? '',
-        role: supabaseUser.user_metadata?.role ?? 'user',
-        is_active: true,
-        last_login_at: supabaseUser.last_sign_in_at ?? new Date().toISOString(),
-        created_at: supabaseUser.created_at ?? '',
-        updated_at: supabaseUser.updated_at ?? '',
-      };
-
-      setUser(appUser);
+      const appUser = await fetchUserFromDb(supabaseUser);
+      if (mounted) setUser(appUser);
     }
 
     fetchUser();
@@ -56,19 +69,8 @@ export function useUser(): User | null {
       if (!mounted) return;
 
       if (session?.user) {
-        const supabaseUser = session.user;
-        setUser({
-          id: supabaseUser.id,
-          email: supabaseUser.email ?? '',
-          username:
-            supabaseUser.user_metadata?.username ?? supabaseUser.email ?? '',
-          role: supabaseUser.user_metadata?.role ?? 'user',
-          is_active: true,
-          last_login_at:
-            supabaseUser.last_sign_in_at ?? new Date().toISOString(),
-          created_at: supabaseUser.created_at ?? '',
-          updated_at: supabaseUser.updated_at ?? '',
-        });
+        const appUser = await fetchUserFromDb(session.user);
+        if (mounted) setUser(appUser);
       } else {
         setUser(null);
       }
