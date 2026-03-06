@@ -8,7 +8,7 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { Avatar } from '@/presentation/components/base';
 import {
   BookIcon,
-  SearchIcon,
+  // SearchIcon,
   MenuIcon,
   CloseIcon,
 } from '@/presentation/components/base/icons';
@@ -76,18 +76,18 @@ export function PublicNavbar() {
         </div>
         <div className="flex items-center gap-4 md:gap-6">
           {/* Search Bar - Hidden on small mobile, visible on desktop/large tablet */}
-          <div className="hidden lg:flex items-center bg-white shadow-[inset_2px_2px_5px_rgba(0,0,0,0.05),inset_-2px_-2px_5px_rgba(255,255,255,0.8)] rounded-full px-4 h-10 w-64 border border-slate-100">
+          {/* <div className="hidden lg:flex items-center bg-white shadow-[inset_2px_2px_5px_rgba(0,0,0,0.05),inset_-2px_-2px_5px_rgba(255,255,255,0.8)] rounded-full px-4 h-10 w-64 border border-slate-100">
             <SearchIcon className="text-[#51c878]/60" size={20} />
             <input
               className="bg-transparent border-none focus:ring-0 text-sm w-full text-[#1e293b] placeholder-slate-400 outline-none ml-2"
               placeholder="Search surah or verse..."
               type="text"
             />
-          </div>
+          </div> */}
 
-          <button className="lg:hidden p-2 text-slate-500 hover:text-[#51c878]">
+          {/* <button className="lg:hidden p-2 text-slate-500 hover:text-[#51c878]">
             <SearchIcon size={20} />
-          </button>
+          </button> */}
 
           {/* User Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
