@@ -6,13 +6,31 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useUser } from '@/presentation/hooks';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { Avatar } from '@/presentation/components/base';
-import {
-  BookIcon,
-  // SearchIcon,
-  MenuIcon,
-  CloseIcon,
-  DashboardIcon,
-} from '@/presentation/components/base/icons';
+
+// Simple icons
+const BookIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+  </svg>
+);
+
+const MenuIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+  </svg>
+);
+
+const CloseIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+const DashboardIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+  </svg>
+);
 
 export function PublicNavbar() {
   const pathname = usePathname();
@@ -41,59 +59,47 @@ export function PublicNavbar() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const navLinks = [
+    { label: 'Beranda', href: '/' },
     { label: 'Muhud', href: '/muhud' },
     { label: 'Diba', href: '/diba' },
     { label: 'Kitab', href: '/kitab' },
-    { label: 'Hadi', href: '#' },
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">
-      <div className="max-w-[1200px] mx-auto px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-10">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="size-8 bg-[#51c878]/20 text-[#51c878] rounded-xl flex items-center justify-center">
-              <BookIcon size={20} />
-            </div>
-            <h2 className="text-[#1e293b] text-xl font-bold tracking-tight">
-              ISHARI
-            </h2>
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                className={`text-sm font-medium transition-colors ${
-                  pathname === link.href
-                    ? 'text-[#1e293b] font-semibold border-b-2 border-[#51c878] pb-0.5'
-                    : 'text-[#475569] hover:text-[#51c878]'
-                }`}
-                href={link.href}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-        <div className="flex items-center gap-4 md:gap-6">
-          {/* Search Bar - Hidden on small mobile, visible on desktop/large tablet */}
-          {/* <div className="hidden lg:flex items-center bg-white shadow-[inset_2px_2px_5px_rgba(0,0,0,0.05),inset_-2px_-2px_5px_rgba(255,255,255,0.8)] rounded-full px-4 h-10 w-64 border border-slate-100">
-            <SearchIcon className="text-[#51c878]/60" size={20} />
-            <input
-              className="bg-transparent border-none focus:ring-0 text-sm w-full text-[#1e293b] placeholder-slate-400 outline-none ml-2"
-              placeholder="Search surah or verse..."
-              type="text"
-            />
-          </div> */}
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-9 h-9 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
+            <BookIcon className="w-5 h-5" />
+          </div>
+          <span className="text-slate-900 text-lg font-bold tracking-tight">
+            ISHARI
+          </span>
+        </Link>
 
-          {/* <button className="lg:hidden p-2 text-slate-500 hover:text-[#51c878]">
-            <SearchIcon size={20} />
-          </button> */}
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navLinks.map((link) => (
+            <Link
+              key={link.label}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                pathname === link.href
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'text-slate-600 hover:text-emerald-600 hover:bg-slate-50'
+              }`}
+              href={link.href}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
 
+        <div className="flex items-center gap-3">
           {/* User Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
-              className="flex items-center justify-center size-10 rounded-full border-2 border-white shadow-[4px_4px_10px_rgba(81,200,120,0.1),-4px_-4px_10px_rgba(255,255,255,0.8)] transition-transform hover:scale-105"
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               aria-label="User profile menu"
             >
@@ -105,10 +111,10 @@ export function PublicNavbar() {
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] border border-slate-100 py-1 z-50 flex flex-col overflow-hidden">
-                <div className="px-4 py-3 bg-slate-50/50 border-b border-slate-100">
-                  <p className="text-sm font-semibold text-slate-800 capitalize truncate">
-                    {user?.username || 'Guest User'}
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 py-2 z-50 overflow-hidden">
+                <div className="px-4 py-3 border-b border-slate-100">
+                  <p className="text-sm font-semibold text-slate-900 capitalize truncate">
+                    {user?.username || 'Tamu'}
                   </p>
                   {user?.email && (
                     <p className="text-xs text-slate-500 truncate mt-0.5">
@@ -116,7 +122,7 @@ export function PublicNavbar() {
                     </p>
                   )}
                   {!user && (
-                    <p className="text-xs text-slate-500 mt-0.5">Visitor</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Pengunjung</p>
                   )}
                 </div>
                 <div className="py-1">
@@ -124,33 +130,32 @@ export function PublicNavbar() {
                     <Link
                       href="/dashboard"
                       onClick={() => setIsDropdownOpen(false)}
-                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 border-b border-slate-50"
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-3"
                     >
-                      <DashboardIcon size={16} className="text-[#51c878]" />
-                      Dashboard
+                      <DashboardIcon className="w-4 h-4 text-emerald-600" />
+                      Dashboard Admin
                     </Link>
                   )}
+                  <Link
+                    href="/intro"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-3"
+                  >
+                    <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                    </svg>
+                    Tentang Aplikasi
+                  </Link>
                   {user ? (
                     <button
                       onClick={() => {
                         setIsDropdownOpen(false);
                         logout();
                       }}
-                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors flex items-center gap-2"
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                        className="w-4 h-4"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
-                        />
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
                       </svg>
                       Keluar
                     </button>
@@ -160,21 +165,10 @@ export function PublicNavbar() {
                         setIsDropdownOpen(false);
                         router.push('/login');
                       }}
-                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-[#51c878] hover:bg-[#51c878]/10 transition-colors flex items-center gap-2"
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-emerald-600 hover:bg-emerald-50 transition-colors flex items-center gap-3"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                        className="w-4 h-4"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-3 0l3-3m0 0l-3-3m3 3H9"
-                        />
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-3 0l3-3m0 0l-3-3m3 3H9" />
                       </svg>
                       Masuk
                     </button>
@@ -186,33 +180,35 @@ export function PublicNavbar() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-slate-500 hover:text-[#51c878] transition-colors"
+            className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
             onClick={toggleMenu}
           >
-            {isMenuOpen ? <CloseIcon size={24} /> : <MenuIcon size={24} />}
+            {isMenuOpen ? <CloseIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-100 shadow-xl p-6 animate-in slide-in-from-top duration-200">
-          <nav className="flex flex-col gap-5">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-100 shadow-lg">
+          <nav className="p-4 space-y-1">
             {user && user.role !== 'user' && (
               <Link
                 href="/dashboard"
-                className="text-lg font-semibold text-[#51c878] transition-colors border-b border-slate-50 pb-2 flex items-center gap-2"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-600 font-medium bg-emerald-50"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <DashboardIcon size={20} />
+                <DashboardIcon className="w-5 h-5" />
                 Dashboard Admin
               </Link>
             )}
             {navLinks.map((link) => (
               <Link
                 key={link.label}
-                className={`text-lg font-medium transition-colors ${
-                  pathname === link.href ? 'text-[#51c878]' : 'text-slate-600'
+                className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
+                  pathname === link.href
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'text-slate-600 hover:bg-slate-50'
                 }`}
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}

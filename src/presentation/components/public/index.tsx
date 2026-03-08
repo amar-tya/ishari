@@ -5,3 +5,5 @@ export { PublicAudioPlayer } from './PublicAudioPlayer';
 export { PublicChapterList } from './PublicChapterList';
 export { KitabList } from './KitabList';
 export { PublicNavbar } from './PublicNavbar';
+export { HomeLanding } from './HomeLanding';
+export { OnboardingScreen } from './OnboardingScreen';

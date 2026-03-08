@@ -2,43 +2,50 @@
 @import 'tailwindcss';
 
 /* ============================
-   COLOR PALETTE
+   ISHARI MOBILE-FIRST DESIGN SYSTEM
    ============================ */
 :root {
   color-scheme: light;
-  /* Primary Colors - Adjusted to be slightly softer/modern */
-  --color-primary: #3aaf50;
-  --color-primary-dark: #2f9444;
-  --color-primary-light: #f0fdf4; /* Lighter green for hover/active backgrounds */
+  
+  /* Primary Colors - Emerald palette */
+  --color-primary: #059669; /* emerald-600 */
+  --color-primary-dark: #047857; /* emerald-700 */
+  --color-primary-light: #d1fae5; /* emerald-100 */
+  --color-primary-lighter: #ecfdf5; /* emerald-50 */
 
   /* Background Colors */
-  --color-bg-main: #f9fafb; /* Slate 50/Gray 50ish - cleaner than plain white/gray */
+  --color-bg-main: #ffffff;
+  --color-bg-secondary: #f8fafc; /* slate-50 */
   --color-bg-card: #ffffff;
   --color-bg-sidebar: #ffffff;
 
   /* Text Colors */
-  --color-text-primary: #111827; /* Gray 900 - softer than pure black */
-  --color-text-secondary: #4b5563; /* Gray 600 */
-  --color-text-muted: #9ca3af; /* Gray 400 */
+  --color-text-primary: #0f172a; /* slate-900 */
+  --color-text-secondary: #475569; /* slate-600 */
+  --color-text-muted: #94a3b8; /* slate-400 */
 
   /* Status Colors */
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
+  --color-success: #10b981; /* emerald-500 */
+  --color-warning: #f59e0b; /* amber-500 */
+  --color-error: #ef4444; /* red-500 */
+  --color-info: #3b82f6; /* blue-500 */
 
   /* Border Colors */
-  --color-border: #e5e7eb; /* Gray 200 */
-  --color-border-light: #f3f4f6; /* Gray 100 */
+  --color-border: #e2e8f0; /* slate-200 */
+  --color-border-light: #f1f5f9; /* slate-100 */
 
-  /* Shadows - More premium/diffuse */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.03);
-  --shadow-md:
-    0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --shadow-lg:
-    0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05); /* Very subtle large shadow */
-  --shadow-card:
-    0 0 0 1px rgb(0 0 0 / 0.03), 0 2px 8px rgb(0 0 0 / 0.06); /* Custom crisp card shadow */
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
 }
 
 /* ============================
@@ -49,7 +56,9 @@
   --color-primary: var(--color-primary);
   --color-primary-dark: var(--color-primary-dark);
   --color-primary-light: var(--color-primary-light);
+  --color-primary-lighter: var(--color-primary-lighter);
   --color-bg-main: var(--color-bg-main);
+  --color-bg-secondary: var(--color-bg-secondary);
   --color-bg-card: var(--color-bg-card);
   --color-bg-sidebar: var(--color-bg-sidebar);
   --color-text-primary: var(--color-text-primary);
@@ -64,7 +73,12 @@
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
-  --shadow-card: var(--shadow-card);
+  --shadow-xl: var(--shadow-xl);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -155,19 +169,43 @@
 /* ============================
    BASE STYLES
    ============================ */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   background: var(--color-bg-main);
   color: var(--color-text-primary);
   font-family: var(--font-sans), system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased; /* Crisp text */
+  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
 }
 
-/* Button & Card resets/enhancements */
+/* Mobile-first touch optimization */
+@media (hover: none) {
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Button transitions */
 button {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+  transition-duration: 150ms;
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 /* Soft Scrollbar */
@@ -181,10 +219,17 @@ button {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #cbd5e1;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #94a3b8;
+}
+
+/* Safe area padding for mobile */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }

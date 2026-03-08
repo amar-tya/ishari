@@ -1,16 +1,13 @@
 import { LoginViewModel } from '@/presentation/view-models';
+import Link from 'next/link';
 
 // Icons
 const LoadingSpinner = () => (
   <svg
-    className="animate-spin"
+    className="animate-spin w-5 h-5"
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
-    style={{
-      width: 'clamp(1.25rem, 4vw, 1.5rem)',
-      height: 'clamp(1.25rem, 4vw, 1.5rem)',
-    }}
   >
     <circle
       className="opacity-25"
@@ -30,13 +27,7 @@ const LoadingSpinner = () => (
 
 // Google Icon
 const GoogleIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    style={{
-      width: 'clamp(1rem, 3vw, 1.25rem)',
-      height: 'clamp(1rem, 3vw, 1.25rem)',
-    }}
-  >
+  <svg className="w-5 h-5" viewBox="0 0 24 24">
     <path
       fill="#4285F4"
       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -56,6 +47,23 @@ const GoogleIcon = () => (
   </svg>
 );
 
+// Book Icon for branding
+const BookIcon = () => (
+  <svg
+    className="w-8 h-8 text-emerald-600"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={1.5}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+    />
+  </svg>
+);
+
 interface LoginFormProps {
   viewModel: LoginViewModel;
 }
@@ -63,81 +71,83 @@ interface LoginFormProps {
 /**
  * LoginForm Component
  *
- * Reusable login form component yang menerima ViewModel sebagai props.
- * Hanya berisi UI, semua logic ada di ViewModel.
+ * Modern mobile-first login form dengan Google authentication.
  */
 export function LoginForm({ viewModel }: LoginFormProps) {
   const { isLoading, error, handleGoogleLogin } = viewModel;
 
   return (
-    <div
-      className="w-full bg-white rounded-2xl shadow-lg"
-      style={{
-        maxWidth: 'clamp(320px, 90vw, 440px)',
-        padding: 'clamp(1.5rem, 5vw, 2.5rem)',
-      }}
-    >
-      {/* Header */}
-      <div
-        className="text-center"
-        style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}
-      >
-        <h1
-          className="font-bold text-gray-800"
-          style={{ fontSize: 'clamp(1.25rem, 4vw, 1.75rem)' }}
-        >
-          Masuk Aplikasi
+    <div className="w-full max-w-md mx-auto px-6">
+      {/* Logo & Branding */}
+      <div className="text-center mb-10">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-2xl mb-6">
+          <BookIcon />
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
+          Masuk ke ISHARI
         </h1>
-        <p
-          className="text-gray-500"
-          style={{
-            fontSize: 'clamp(0.8rem, 2.5vw, 0.95rem)',
-            marginTop: 'clamp(0.25rem, 1vw, 0.5rem)',
-          }}
-        >
-          Silakan masuk menggunakan akun Google Anda
+        <p className="text-slate-500">
+          Akses koleksi kitab digital dan fitur premium
         </p>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div
-          className="bg-red-50 border border-red-200 text-red-700 rounded-lg"
-          style={{
-            padding: 'clamp(0.75rem, 2vw, 1rem)',
-            marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
-            fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
-          }}
-        >
-          {error}
-        </div>
-      )}
+      {/* Login Card */}
+      <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm">
+            {error}
+          </div>
+        )}
 
-      {/* Google Login Button */}
-      <button
-        type="button"
-        onClick={handleGoogleLogin}
-        disabled={isLoading}
-        className="w-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-        style={{
-          padding: 'clamp(0.625rem, 2vw, 0.875rem)',
-          fontSize: 'clamp(0.8rem, 2.5vw, 0.95rem)',
-        }}
-      >
-        {isLoading ? <LoadingSpinner /> : <GoogleIcon />}
-        {isLoading ? 'Memuat...' : 'Lanjutkan dengan Google'}
-      </button>
+        {/* Google Login Button */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-white border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-2xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {isLoading ? <LoadingSpinner /> : <GoogleIcon />}
+          {isLoading ? 'Memproses...' : 'Lanjutkan dengan Google'}
+        </button>
+
+        {/* Divider */}
+        <div className="relative my-8">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-200"></div>
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-white px-4 text-sm text-slate-400">
+              atau
+            </span>
+          </div>
+        </div>
+
+        {/* Continue as Guest */}
+        <Link
+          href="/"
+          className="w-full flex items-center justify-center py-4 px-6 bg-slate-50 hover:bg-slate-100 text-slate-600 font-medium rounded-2xl transition-colors"
+        >
+          Lanjutkan sebagai Tamu
+        </Link>
+
+        {/* Terms */}
+        <p className="mt-8 text-center text-xs text-slate-400 leading-relaxed">
+          Dengan masuk, Anda menyetujui{' '}
+          <span className="text-emerald-600 hover:underline cursor-pointer">
+            Ketentuan Layanan
+          </span>{' '}
+          dan{' '}
+          <span className="text-emerald-600 hover:underline cursor-pointer">
+            Kebijakan Privasi
+          </span>{' '}
+          kami.
+        </p>
+      </div>
 
       {/* Footer */}
-      <div
-        className="text-center text-gray-400"
-        style={{
-          marginTop: 'clamp(1.5rem, 4vw, 2rem)',
-          fontSize: 'clamp(0.65rem, 2vw, 0.75rem)',
-          letterSpacing: '0.05em',
-        }}
-      >
-        ISHARI V1.0.0
+      <div className="mt-8 text-center">
+        <p className="text-sm text-slate-400">ISHARI v1.0.0</p>
       </div>
     </div>
   );

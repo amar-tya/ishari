@@ -3,13 +3,32 @@
 import React, { useEffect, useState } from 'react';
 import { useChapter } from '@/presentation/hooks';
 import { ChapterEntity } from '@/core/entities';
-import {
-  ArrowRightIcon,
-  BookIcon,
-  ChaptersIcon,
-  DashboardIcon,
-} from '@/presentation/components/base/icons';
 import Link from 'next/link';
+
+// Simple icons
+const GridIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+  </svg>
+);
+
+const ListIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+  </svg>
+);
+
+const ArrowRightIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+  </svg>
+);
+
+const BookIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+  </svg>
+);
 
 export interface PublicChapterListProps {
   title: string;
@@ -31,10 +50,9 @@ export function PublicChapterList({
     const fetchChapters = async () => {
       setLoading(true);
       try {
-        // Fetch chapters explicitly defined in the category param
         const res = await findChapter({
           page: 1,
-          limit: 100, // Reasonable limit to get all relevant chapters
+          limit: 100,
           category: category,
         });
 
@@ -52,135 +70,107 @@ export function PublicChapterList({
   }, [findChapter, category]);
 
   return (
-    <div className="flex-1 w-full max-w-[1200px] mx-auto p-6 pb-20">
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+    <div className="flex-1 w-full max-w-4xl mx-auto px-4 md:px-6 py-8 pb-20">
+      {/* Header */}
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black text-[#0f172a] mb-2 tracking-tight">
-            {title}
-          </h1>
-          <p className="text-slate-500 font-medium">{description}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">{title}</h1>
+          <p className="text-slate-500">{description}</p>
         </div>
 
-        <div className="flex bg-slate-100/50 backdrop-blur-sm p-1.5 rounded-2xl border border-slate-200/60 shadow-inner w-fit">
+        {/* View Toggle */}
+        <div className="flex bg-slate-100 p-1 rounded-xl w-fit">
           <button
             onClick={() => setViewMode('grid')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               viewMode === 'grid'
-                ? 'bg-[#51c878] text-white shadow-[0_4px_12px_rgba(81,200,120,0.3)]'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            <DashboardIcon size={16} />
-            CARD
+            <GridIcon />
+            <span className="hidden sm:inline">Grid</span>
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               viewMode === 'list'
-                ? 'bg-[#51c878] text-white shadow-[0_4px_12px_rgba(81,200,120,0.3)]'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            <ChaptersIcon size={16} />
-            LIST
+            <ListIcon />
+            <span className="hidden sm:inline">List</span>
           </button>
         </div>
       </div>
 
+      {/* Content */}
       {loading ? (
         <div className="flex justify-center p-20">
-          <div className="animate-spin size-10 border-4 border-[#51c878] border-t-transparent rounded-full" />
+          <div className="animate-spin w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full" />
         </div>
       ) : chapters.length === 0 ? (
-        <div className="text-center p-20 text-slate-500 bg-white rounded-2xl border border-slate-100 shadow-sm">
-          Belum ada data muhud yang ditemukan.
+        <div className="text-center p-16 text-slate-500 bg-white rounded-2xl border border-slate-100">
+          Belum ada data yang ditemukan.
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {chapters.map((chapter) => (
             <Link
               key={chapter.id}
               href={`/?id=${chapter.id}`}
-              className="group relative overflow-hidden block bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200 hover:border-[#51c878]/50 hover:shadow-[0_12px_40px_-15px_rgba(81,200,120,0.25)] hover:-translate-y-1 transition-all duration-300"
+              className="group bg-white rounded-2xl p-5 border border-slate-100 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-100/50 transition-all"
             >
-              {/* Decorative Background Blob */}
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-[#51c878]/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-6">
-                  <span className="inline-flex items-center justify-center px-4 py-1.5 bg-gradient-to-r from-[#e6f7ec] to-white border border-[#51c878]/20 text-[#258b45] text-xs font-bold rounded-full shadow-[0_2px_10px_-4px_rgba(81,200,120,0.2)]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#51c878] mr-2"></span>
-                    {chapter.category}
-                  </span>
-                  <div className="size-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#51c878] group-hover:text-white group-hover:border-[#51c878] transition-all duration-300 shadow-sm group-hover:shadow-[0_4px_12px_rgba(81,200,120,0.3)]">
-                    <div className="transform group-hover:translate-x-0.5 transition-transform duration-300">
-                      <ArrowRightIcon size={20} />
-                    </div>
-                  </div>
+              <div className="flex justify-between items-start mb-4">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  {chapter.category}
+                </span>
+                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                  <ArrowRightIcon className="w-4 h-4" />
                 </div>
-
-                <h3 className="text-2xl font-bold text-[#0f172a] mb-2 group-hover:text-[#51c878] transition-colors duration-300 tracking-tight">
-                  {chapter.title}
-                </h3>
-
-                {chapter.description && (
-                  <p
-                    className="font-serif text-[#64748b] text-2xl leading-relaxed mt-4 group-hover:text-[#334155] transition-colors"
-                    dir="rtl"
-                  >
-                    {chapter.description}
-                  </p>
-                )}
               </div>
+
+              <h3 className="text-lg font-semibold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors">
+                {chapter.title}
+              </h3>
+
+              {chapter.description && (
+                <p className="font-serif text-slate-600 text-xl leading-relaxed" dir="rtl">
+                  {chapter.description}
+                </p>
+              )}
             </Link>
           ))}
         </div>
       ) : (
-        <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-3">
           {chapters.map((chapter) => (
             <Link
               key={chapter.id}
               href={`/?id=${chapter.id}`}
-              className="group flex flex-col md:flex-row md:items-center bg-white/70 backdrop-blur-md rounded-3xl p-5 border border-slate-200 hover:border-[#51c878]/40 hover:bg-white hover:shadow-xl hover:shadow-[#51c878]/5 transition-all duration-300"
+              className="group flex items-center gap-4 bg-white rounded-xl p-4 border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-all"
             >
-              <div className="flex items-center flex-1">
-                <div className="size-12 rounded-2xl bg-gradient-to-br from-[#e6f7ec] to-white border border-[#51c878]/10 flex items-center justify-center text-[#258b45] group-hover:from-[#51c878] group-hover:to-[#3da35f] group-hover:text-white transition-all duration-300 shrink-0 shadow-sm">
-                  <BookIcon size={24} />
-                </div>
-                <div className="ml-5 flex-1 min-w-0 pr-4">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-xl font-bold text-[#0f172a] truncate group-hover:text-[#258b45] transition-colors">
-                      {chapter.title}
-                    </h3>
-                    <span className="hidden xs:inline-block text-[10px] font-black tracking-widest text-[#258b45] px-2.5 py-1 bg-[#e6f7ec] rounded-lg border border-[#51c878]/10">
-                      {chapter.category.toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-slate-400 text-xs font-medium uppercase tracking-wider">
-                    <span className="truncate">ISHARI DIGITAL COLLECTION</span>
-                    <span className="mx-2 opacity-30">•</span>
-                    <span>{chapter.category}</span>
-                  </div>
-                </div>
+              <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all flex-shrink-0">
+                <BookIcon className="w-6 h-6" />
               </div>
-
-              {chapter.description && (
-                <div className="mt-4 md:mt-0 md:ml-auto md:mr-8 text-right flex flex-col items-end">
-                  <p
-                    className="font-serif text-slate-500 text-2xl leading-tight group-hover:text-[#0f172a] transition-colors"
-                    dir="rtl"
-                  >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h3 className="font-semibold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                    {chapter.title}
+                  </h3>
+                  <span className="text-xs font-medium text-emerald-600 px-2 py-0.5 bg-emerald-50 rounded">
+                    {chapter.category}
+                  </span>
+                </div>
+                {chapter.description && (
+                  <p className="font-serif text-slate-500 text-lg truncate" dir="rtl">
                     {chapter.description}
                   </p>
-                </div>
-              )}
-
-              <div className="hidden md:flex size-11 rounded-full bg-slate-50 border border-slate-100 items-center justify-center text-slate-300 group-hover:bg-[#51c878] group-hover:text-white group-hover:border-[#51c878] transition-all duration-300 group-hover:shadow-[0_4px_12px_rgba(81,200,120,0.3)]">
-                <ArrowRightIcon
-                  size={20}
-                  className="transform group-hover:translate-x-0.5 transition-transform"
-                />
+                )}
               </div>
+              <ArrowRightIcon className="w-5 h-5 text-slate-400 group-hover:text-emerald-600 transition-colors flex-shrink-0" />
             </Link>
           ))}
         </div>
