@@ -140,7 +140,13 @@ export const TopBar: React.FC<TopBarProps> = ({
                 {user?.username || 'Guest User'}
               </p>
               <p className="text-caption text-[var(--color-text-secondary)]">
-                {user ? 'Super Admin' : 'Visitor'}
+                {user
+                  ? user.role === 'super_admin'
+                    ? 'Super Admin'
+                    : user.role === 'admin_content'
+                      ? 'Admin Content'
+                      : 'User'
+                  : 'Visitor'}
               </p>
             </div>
           </button>

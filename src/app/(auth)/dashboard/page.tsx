@@ -140,6 +140,7 @@ export default function DashboardPage() {
   const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   useEffect(() => {
+    if (!user) return;
     const fetchStats = async () => {
       setIsLoadingStats(true);
       try {
@@ -152,7 +153,7 @@ export default function DashboardPage() {
       }
     };
     fetchStats();
-  }, [getDashboardStats]);
+  }, [getDashboardStats, user]);
 
   const statsCards = stats ? buildStatsCards(stats) : [];
 
