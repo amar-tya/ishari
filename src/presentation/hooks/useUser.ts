@@ -8,9 +8,10 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 /**
  * useUser Hook
  *
- * Hook untuk mendapatkan user data dari localStorage.
- * Handles SSR/hydration dengan benar - mulai dengan null,
- * lalu update setelah component mount di client.
+ * Menggunakan onAuthStateChange sebagai satu-satunya sumber kebenaran
+ * untuk auth state. Event INITIAL_SESSION langsung membawa session saat
+ * listener dipasang, sehingga tidak perlu fetchUser() terpisah yang
+ * bisa menyebabkan race condition.
  */
 export function useUser(): User | null {
   const [user, setUser] = useState<User | null>(null);
@@ -19,7 +20,6 @@ export function useUser(): User | null {
     let mounted = true;
 
     async function fetchUserFromDb(supabaseUser: SupabaseUser): Promise<User> {
-      // Fetch user data from public.users table to get the actual role
       const { data: dbUser } = await supabaseBrowserClient
         .from('users')
         .select('*')
@@ -42,27 +42,10 @@ export function useUser(): User | null {
       };
     }
 
-    async function fetchUser() {
-      // Get the current session user directly from Supabase
-      const {
-        data: { user: supabaseUser },
-        error,
-      } = await supabaseBrowserClient.auth.getUser();
-
-      if (!mounted) return;
-
-      if (error || !supabaseUser) {
-        setUser(null);
-        return;
-      }
-
-      const appUser = await fetchUserFromDb(supabaseUser);
-      if (mounted) setUser(appUser);
-    }
-
-    fetchUser();
-
-    // Set up auth state listener to update user when auth state changes (e.g. login/logout)
+    // onAuthStateChange fires INITIAL_SESSION immediately with the current
+    // session (from cookies), then TOKEN_REFRESHED / SIGNED_IN / SIGNED_OUT
+    // as auth state changes. This is the single source of truth — no need
+    // for a separate fetchUser() that would race with INITIAL_SESSION.
     const {
       data: { subscription },
     } = supabaseBrowserClient.auth.onAuthStateChange(async (event, session) => {
