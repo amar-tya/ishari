@@ -20,6 +20,7 @@ import {
   VerseMediaIcon,
   LogoutIcon,
   ChevronLeftIcon,
+  OverviewVersesIcon,
 } from '../base/icons';
 
 interface NavItem {
@@ -38,6 +39,7 @@ const navGroups: NavGroup[] = [
     title: 'MAIN',
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: <DashboardIcon /> },
+      { label: 'Overview Verses', href: '/overview-verses', icon: <OverviewVersesIcon /> },
     ],
   },
   {
