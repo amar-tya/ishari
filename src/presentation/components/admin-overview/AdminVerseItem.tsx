@@ -57,7 +57,7 @@ export function AdminVerseItem({
             </p>
             {/* Audio progress indicator */}
             {progress > 0 && (
-              <div className="w-full h-[3px] bg-[#e6f7eb] rounded-full mt-4 md:mt-6 relative">
+              <div className="w-full h-0.75 bg-[#e6f7eb] rounded-full mt-4 md:mt-6 relative">
                 <div
                   className="absolute top-0 right-0 h-full bg-[#51c878] rounded-full transition-all duration-300 ease-in-out"
                   style={{ width: `${progress}%` }}
@@ -75,7 +75,7 @@ export function AdminVerseItem({
           )}
 
           {/* Admin Action Bar */}
-          <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="flex items-center gap-2 mt-3">
             {verse.verseMedia && verse.verseMedia.length > 0 && (
               <button
                 onClick={() => onPlayClick?.(verse)}

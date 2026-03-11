@@ -116,7 +116,9 @@ export function AdminOverviewDashboard() {
     isMounted.current = true;
     fetchVerses(1);
     findChapterList({ page: 1, limit: 100 });
-    return () => { isMounted.current = false; };
+    return () => {
+      isMounted.current = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapterId]);
 
@@ -199,7 +201,7 @@ export function AdminOverviewDashboard() {
 
   return (
     <>
-      <main className="flex-1 w-full max-w-[1400px] mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <main className="flex-1 w-full max-w-350 mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Sidebar */}
         <PublicSidebar
           chapter={chapter}
@@ -219,8 +221,8 @@ export function AdminOverviewDashboard() {
                 {chapter?.title || 'Loading...'}
               </h1>
               <p className="text-[#475569]">
-                {chapter?.category || 'Meccan'} •{' '}
-                {chapter?.totalVerses || 0} Verses
+                {chapter?.category || 'Meccan'} • {chapter?.totalVerses || 0}{' '}
+                Verses
               </p>
             </div>
             <button

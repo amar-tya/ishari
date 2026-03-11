@@ -35,7 +35,7 @@ const DashboardContent: React.FC<DashboardLayoutProps> = ({
         <main
           className="flex-grow"
           style={{
-            padding: 'clamp(1rem, 2vw, 1.5rem)',
+            padding: 'clamp(0rem, 2vw, 1.5rem)',
           }}
         >
           {children}
