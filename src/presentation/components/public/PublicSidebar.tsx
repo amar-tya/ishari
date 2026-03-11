@@ -82,7 +82,7 @@ export function PublicSidebar({
             Play Full Surah
           </button> */}
           <button
-            onClick={() => setShowTranslation(!showTranslation)}
+            onClick={(e) => { e.stopPropagation(); setShowTranslation(!showTranslation); }}
             className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl transition-all font-semibold border ${
               showTranslation
                 ? 'bg-white border-[#51c878] text-[#51c878] hover:bg-[#e6f7ec]'

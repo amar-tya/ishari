@@ -39,6 +39,9 @@ export class VerseRepository implements IVerseRepositoryPort {
     if (criteria.chapterId) {
       query = query.eq('chapter_id', criteria.chapterId);
     }
+    if (criteria.verseIds && criteria.verseIds.length > 0) {
+      query = query.in('id', criteria.verseIds);
+    }
     if (criteria.search) {
       query = query.or(
         `arabic_text.ilike.%${criteria.search}%,transliteration.ilike.%${criteria.search}%`

@@ -8,6 +8,7 @@ export interface VerseRequest {
   chapterId?: number;
   arabicText?: string;
   transliteration?: string;
+  verseIds?: number[];
 }
 
 export interface VerseResponse {

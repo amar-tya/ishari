@@ -72,7 +72,7 @@ export function PublicDashboard() {
       }
     };
     loadBookmarks();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleBookmarkToggle = useCallback(
@@ -167,7 +167,7 @@ export function PublicDashboard() {
 
   return (
     <>
-      <main className="flex-1 w-full max-w-[1200px] mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <main className="flex-1 w-full max-w-300 mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
         <PublicSidebar
           chapter={chapter}
           showTranslation={showTranslation}
