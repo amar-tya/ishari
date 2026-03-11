@@ -12,12 +12,13 @@ import {
   MenuIcon,
   CloseIcon,
   DashboardIcon,
+  BookmarkIcon,
 } from '@/presentation/components/base/icons';
 
 export function PublicNavbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const user = useUser();
+  const { user } = useUser();
   const { logout } = useAuth();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -73,6 +74,19 @@ export function PublicNavbar() {
                 {link.label}
               </Link>
             ))}
+            {user && (
+              <Link
+                href="/bookmark"
+                className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  pathname === '/bookmark'
+                    ? 'text-[#1e293b] font-semibold border-b-2 border-[#51c878] pb-0.5'
+                    : 'text-[#475569] hover:text-[#51c878]'
+                }`}
+              >
+                <BookmarkIcon size={14} filled={pathname === '/bookmark'} />
+                Bookmark
+              </Link>
+            )}
           </nav>
         </div>
         <div className="flex items-center gap-4 md:gap-6">
@@ -220,6 +234,18 @@ export function PublicNavbar() {
                 {link.label}
               </Link>
             ))}
+            {user && (
+              <Link
+                href="/bookmark"
+                className={`text-lg font-medium transition-colors flex items-center gap-2 ${
+                  pathname === '/bookmark' ? 'text-[#51c878]' : 'text-slate-600'
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <BookmarkIcon size={18} filled={pathname === '/bookmark'} />
+                Bookmark
+              </Link>
+            )}
           </nav>
         </div>
       )}

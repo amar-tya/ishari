@@ -3,12 +3,8 @@
 import React from 'react';
 import {
   PlayIcon,
-  MicIcon,
-  GraphicEqIcon,
-  BookmarkIcon,
-  ShareIcon,
   VerseEndIcon,
-  MoreVerticalIcon,
+  BookmarkIcon,
 } from '@/presentation/components/base/icons';
 import { VerseEntity } from '@/core/entities';
 import { toArabicNumber } from '@/shared/utils/arabicText';
@@ -18,12 +14,18 @@ interface VerseItemProps {
   verse: VerseEntity;
   showTranslation: boolean;
   onPlayClick?: (verse: VerseEntity) => void;
+  isBookmarked?: boolean;
+  onBookmarkToggle?: (verse: VerseEntity) => void;
+  isUser?: boolean;
 }
 
 export function VerseItem({
   verse,
   showTranslation,
   onPlayClick,
+  isBookmarked = false,
+  onBookmarkToggle,
+  isUser = false,
 }: VerseItemProps) {
   const currentTrack = useAudioPlayerStore((state) => state.currentTrack);
   const globalProgress = useAudioPlayerStore((state) => state.progress);
@@ -37,6 +39,25 @@ export function VerseItem({
         showTranslation ? 'p-6 md:p-8' : 'p-4 md:p-6'
       }`}
     >
+      {/* Bookmark corner triangle (top-right) */}
+      {isUser && (
+        <button
+          onClick={() => onBookmarkToggle?.(verse)}
+          title={isBookmarked ? 'Hapus Bookmark' : 'Simpan Bookmark'}
+          className="absolute top-0 right-0 w-10 h-10 cursor-pointer"
+        >
+          <BookmarkIcon
+            size={16}
+            filled={isBookmarked}
+            className={`absolute top-1 right-1 transition-colors duration-200 pointer-events-none ${
+              isBookmarked
+                ? 'text-[#51c878]'
+                : 'text-[#51c878] opacity-40 group-hover:opacity-80'
+            }`}
+          />
+        </button>
+      )}
+
       <div
         className={`flex gap-4 md:gap-6 ${
           !showTranslation ? 'items-center' : 'items-start'
@@ -100,12 +121,6 @@ export function VerseItem({
               </button>
             </div>
           )}
-          {/* <button className="size-6 rounded-xl bg-transparent hover:bg-slate-100 text-slate-400 hover:text-[#51c878] transition-all flex items-center justify-center">
-            <BookmarkIcon size={12} />
-          </button> */}
-          {/* <button className="size-6 rounded-xl bg-transparent hover:bg-slate-100 text-slate-400 hover:text-[#51c878] transition-all flex items-center justify-center">
-            <ShareIcon size={12} />
-          </button> */}
         </div>
       </div>
     </div>

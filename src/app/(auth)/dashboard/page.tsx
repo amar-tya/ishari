@@ -133,7 +133,7 @@ function buildStatsCards(stats: DashboardStatsEntity) {
 }
 
 export default function DashboardPage() {
-  const user = useUser();
+  const { user } = useUser();
   const { getDashboardStats } = useStats();
 
   const [stats, setStats] = useState<DashboardStatsEntity | null>(null);

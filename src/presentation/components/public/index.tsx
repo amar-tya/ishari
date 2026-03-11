@@ -5,3 +5,4 @@ export { PublicAudioPlayer } from './PublicAudioPlayer';
 export { PublicChapterList } from './PublicChapterList';
 export { KitabList } from './KitabList';
 export { PublicNavbar } from './PublicNavbar';
+export { BookmarkList } from './BookmarkList';

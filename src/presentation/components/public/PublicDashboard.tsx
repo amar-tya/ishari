@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useVerse, useChapter } from '@/presentation/hooks';
+import { useVerse, useChapter, useBookmark } from '@/presentation/hooks';
+import { useUser } from '@/presentation/hooks/useUser';
 import { VerseEntity, ChapterEntity } from '@/core/entities';
 import { PublicSidebar } from './PublicSidebar';
 import { VerseItem } from './VerseItem';
 import { PublicAudioPlayer } from './PublicAudioPlayer';
 import { VerseActionSheet } from './VerseActionSheet';
+import { BookmarkNoteModal } from './BookmarkNoteModal';
+import { SuccessModal } from '@/presentation/components/base/SuccessModal';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -23,11 +26,27 @@ export function PublicDashboard() {
 
   const { findVerse } = useVerse();
   const { findChapter } = useChapter();
+  const { findBookmark, createBookmark, deleteBookmark } = useBookmark();
+  const { user } = useUser();
 
   const [chapter, setChapter] = useState<ChapterEntity | null>(null);
   const [verses, setVerses] = useState<VerseEntity[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTranslation, setShowTranslation] = useState(true);
+
+  // Bookmark state: verseId → bookmarkId
+  const [bookmarkedMap, setBookmarkedMap] = useState<Map<number, number>>(
+    new Map()
+  );
+  const [bookmarkNoteVerse, setBookmarkNoteVerse] =
+    useState<VerseEntity | null>(null);
+  const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+  const [successModal, setSuccessModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+  });
 
   const [selectedVerseForAudio, setSelectedVerseForAudio] =
     useState<VerseEntity | null>(null);
@@ -35,6 +54,83 @@ export function PublicDashboard() {
   const [isChapterModalOpen, setIsChapterModalOpen] = useState(false);
 
   const router = useRouter();
+
+  // Load bookmarks for logged-in user
+  useEffect(() => {
+    if (!user) {
+      setBookmarkedMap(new Map());
+      return;
+    }
+    const loadBookmarks = async () => {
+      const res = await findBookmark({ page: 1, limit: 1000 });
+      if (res.success) {
+        const map = new Map<number, number>();
+        res.data.data.forEach((b) => {
+          if (b.verseId && b.id) map.set(b.verseId, b.id);
+        });
+        setBookmarkedMap(map);
+      }
+    };
+    loadBookmarks();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  const handleBookmarkToggle = useCallback(
+    async (verse: VerseEntity) => {
+      if (!verse.id) return;
+      const existingBookmarkId = bookmarkedMap.get(verse.id);
+      if (existingBookmarkId) {
+        // Already bookmarked → delete
+        setIsBookmarkLoading(true);
+        const res = await deleteBookmark(existingBookmarkId);
+        setIsBookmarkLoading(false);
+        if (res.success) {
+          setBookmarkedMap((prev) => {
+            const next = new Map(prev);
+            next.delete(verse.id!);
+            return next;
+          });
+          setSuccessModal({
+            isOpen: true,
+            title: 'Bookmark Dihapus',
+            message: 'Ayat berhasil dihapus dari bookmark Anda.',
+          });
+        }
+      } else {
+        // Not bookmarked → open note modal
+        setBookmarkNoteVerse(verse);
+        setIsBookmarkModalOpen(true);
+      }
+    },
+    [bookmarkedMap, deleteBookmark]
+  );
+
+  const handleBookmarkSubmit = useCallback(
+    async (note: string) => {
+      if (!bookmarkNoteVerse?.id) return;
+      setIsBookmarkLoading(true);
+      const res = await createBookmark({
+        verseId: bookmarkNoteVerse.id,
+        note,
+      });
+      setIsBookmarkLoading(false);
+      if (res.success && res.data.id) {
+        setBookmarkedMap((prev) => {
+          const next = new Map(prev);
+          next.set(bookmarkNoteVerse.id!, res.data.id!);
+          return next;
+        });
+        setIsBookmarkModalOpen(false);
+        setBookmarkNoteVerse(null);
+        setSuccessModal({
+          isOpen: true,
+          title: 'Bookmark Disimpan',
+          message: 'Ayat berhasil ditambahkan ke bookmark Anda.',
+        });
+      }
+    },
+    [bookmarkNoteVerse, createBookmark]
+  );
 
   const handlePlayClick = (verse: VerseEntity) => {
     setSelectedVerseForAudio(verse);
@@ -123,6 +219,9 @@ export function PublicDashboard() {
                   verse={verse}
                   showTranslation={showTranslation}
                   onPlayClick={handlePlayClick}
+                  isBookmarked={bookmarkedMap.has(verse.id!)}
+                  onBookmarkToggle={handleBookmarkToggle}
+                  isUser={!!user}
                 />
               ))}
             </div>
@@ -146,6 +245,24 @@ export function PublicDashboard() {
       </main>
 
       <PublicAudioPlayer />
+
+      <BookmarkNoteModal
+        isOpen={isBookmarkModalOpen}
+        verse={bookmarkNoteVerse}
+        onClose={() => {
+          setIsBookmarkModalOpen(false);
+          setBookmarkNoteVerse(null);
+        }}
+        onSubmit={handleBookmarkSubmit}
+        isLoading={isBookmarkLoading}
+      />
+
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal((prev) => ({ ...prev, isOpen: false }))}
+        title={successModal.title}
+        message={successModal.message}
+      />
 
       <VerseActionSheet
         isOpen={isAudioSheetOpen}

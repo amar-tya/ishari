@@ -59,9 +59,19 @@ export class BookmarkRepository implements IBookmarkRepositoryPort {
   async create(
     request: BookmarkCreateRequest
   ): Promise<Result<BookmarkEntity>> {
+    const { data: { user: authUser }, error: authError } = await this.supabase.auth.getUser();
+    if (authError || !authUser) return failure(new ServerError('User tidak terautentikasi'));
+
+    const { data: dbUser, error: userError } = await this.supabase
+      .from('users')
+      .select('id')
+      .eq('email', authUser.email)
+      .single();
+    if (userError || !dbUser) return failure(new ServerError('User tidak ditemukan'));
+
     const { data, error } = await this.supabase
       .from('bookmarks')
-      .insert({ verse_id: request.verseId, note: request.note })
+      .insert({ verse_id: request.verseId, note: request.note, user_id: dbUser.id })
       .select()
       .single();
 

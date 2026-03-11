@@ -20,7 +20,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const router = useRouter();
   const { isCollapsed, openMobileMenu } = useSidebar();
   const marginLeft = isCollapsed ? '80px' : 'clamp(240px, 20vw, 280px)';
-  const user = useUser();
+  const { user } = useUser();
   const { logout } = useAuth();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

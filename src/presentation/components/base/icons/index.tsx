@@ -76,9 +76,10 @@ export const DashboardIcon: React.FC<IconProps> = ({
 );
 
 // Bookmark icon
-export const BookmarkIcon: React.FC<IconProps> = ({
+export const BookmarkIcon: React.FC<IconProps & { filled?: boolean }> = ({
   className = '',
   size = 20,
+  filled = false,
 }) => (
   <svg
     width={size}
@@ -94,6 +95,7 @@ export const BookmarkIcon: React.FC<IconProps> = ({
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      fill={filled ? 'currentColor' : 'none'}
     />
   </svg>
 );
