@@ -27,7 +27,7 @@ export function PublicDashboard() {
   const { findVerse } = useVerse();
   const { findChapter } = useChapter();
   const { findBookmark, createBookmark, deleteBookmark } = useBookmark();
-  const { user } = useUser();
+  const { user, isLoading: isUserLoading } = useUser();
 
   const [chapter, setChapter] = useState<ChapterEntity | null>(null);
   const [verses, setVerses] = useState<VerseEntity[]>([]);
@@ -57,6 +57,7 @@ export function PublicDashboard() {
 
   // Load bookmarks for logged-in user
   useEffect(() => {
+    if (isUserLoading) return;
     if (!user) {
       setBookmarkedMap(new Map());
       return;
@@ -73,7 +74,7 @@ export function PublicDashboard() {
     };
     loadBookmarks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, isUserLoading]);
 
   const handleBookmarkToggle = useCallback(
     async (verse: VerseEntity) => {
@@ -142,27 +143,31 @@ export function PublicDashboard() {
   };
 
   useEffect(() => {
+    let cancelled = false;
     const fetchData = async () => {
       setLoading(true);
+      setVerses([]);
+      setChapter(null);
       try {
-        // Fetch Chapter details
-        const chapterRes = await findChapter({ page: 1, limit: 1, chapterId });
+        const [chapterRes, versesRes] = await Promise.all([
+          findChapter({ page: 1, limit: 1, chapterId }),
+          findVerse({ page: 1, limit: 30, chapterId }),
+        ]);
+        if (cancelled) return;
         if (chapterRes.success && chapterRes.data.data.length > 0) {
           setChapter(chapterRes.data.data[0]);
         }
-
-        // Fetch Verses for this chapter
-        const versesRes = await findVerse({ page: 1, limit: 30, chapterId });
         if (versesRes.success) {
           setVerses(versesRes.data.data);
         }
       } catch (err) {
         console.error('Error fetching data:', err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     fetchData();
+    return () => { cancelled = true; };
   }, [chapterId, findChapter, findVerse]);
 
   return (
