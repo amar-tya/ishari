@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"C:\\\\Users\\\\aamar\\\\Doc Lokal\\\\git\\\\ishari\\\\ishari-admin-nextjs-frontend/src/app/\\(auth\\)\")",
+      "Bash(ls \"C:\\\\Users\\\\aamar\\\\Doc Lokal\\\\git\\\\ishari\\\\ishari-admin-nextjs-frontend/src/app/\\(guest\\)\")",
+      "Bash(ls \"C:\\\\Users\\\\aamar\\\\Doc Lokal\\\\git\\\\ishari\\\\ishari-admin-nextjs-frontend/src/app/\\(public\\)\")",
+      "Bash(bun lint)",
+      "Bash(bun lint -- --format json)",
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''fs''\\).readFileSync\\(''/dev/stdin'',''utf8''\\)\\);const f=d.find\\(x=>x.filePath.includes\\(''VerseMediaUpload''\\)\\);if\\(f\\)f.messages.forEach\\(m=>console.log\\(m.line,m.ruleId,m.message.substring\\(0,80\\)\\)\\)\")",
+      "mcp__mcp-server-supabase__list_projects",
+      "mcp__mcp-server-supabase__list_tables",
+      "mcp__mcp-server-supabase__get_advisors",
+      "mcp__mcp-server-supabase__execute_sql",
+      "mcp__mcp-server-supabase__get_logs",
+      "mcp__mcp-server-supabase__apply_migration",
+      "Bash(bun build)",
+      "Bash(npx next build)",
+      "Bash(npx next build --webpack)",
+      "mcp__mcp-server-playwright__browser_navigate",
+      "mcp__mcp-server-playwright__browser_take_screenshot",
+      "mcp__mcp-server-playwright__browser_console_messages",
+      "mcp__mcp-server-playwright__browser_network_requests",
+      "mcp__mcp-server-playwright__browser_wait_for",
+      "mcp__mcp-server-playwright__browser_snapshot",
+      "Bash(xargs sed -i 's/useEffect\\(\\(\\) => \\(\\) => { mountedRef.current = false; }, \\\\[\\\\]\\);/useEffect\\(\\(\\) => {\\\\n    mountedRef.current = true;\\\\n    return \\(\\) => { mountedRef.current = false; };\\\\n  }, []\\);/g')"
+    ]
+  }
+}
