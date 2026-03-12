@@ -5,7 +5,7 @@ import {
   UserUpdateRequest,
 } from '@/application/dto';
 import { useUserManager } from '@/presentation/hooks/useUserManager';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '@/shared/utils';
 
 export interface UserViewModelState {
@@ -16,7 +16,7 @@ export interface UserViewModelState {
 }
 
 export interface UserViewModelActions {
-  findUser: (newCriteria?: Partial<UserRequest>) => Promise<void>;
+  findUser: (newCriteria?: Partial<UserRequest>, options?: { silent?: boolean }) => Promise<void>;
   setCriteria: (criteria: UserRequest) => void;
   createUser: (data: UserCreateRequest) => Promise<boolean>;
   updateUser: (data: UserUpdateRequest) => Promise<boolean>;
@@ -45,11 +45,19 @@ export function useUserViewModel(): UserViewModel {
     search: '',
   });
 
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   // Action
   const findUser = useCallback(
-    async (newCriteria?: Partial<UserRequest>) => {
-      setIsLoading(true);
-      setError(null);
+    async (newCriteria?: Partial<UserRequest>, options?: { silent?: boolean }) => {
+      if (!options?.silent) {
+        setIsLoading(true);
+        setError(null);
+      }
 
       let criteriaToUse = criteria;
 
@@ -60,19 +68,24 @@ export function useUserViewModel(): UserViewModel {
 
       try {
         const result = await findUserHook(criteriaToUse);
+        if (!mountedRef.current) return;
+
         if (result.success) {
           setUserList(result.data);
         } else {
           setError(getErrorMessage(result.error));
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current && !options?.silent) setIsLoading(false);
       }
     },
     [findUserHook, criteria]
   );
+
+  const fetchRef = useRef(findUser);
+  fetchRef.current = findUser;
 
   const createUser = useCallback(
     async (data: UserCreateRequest) => {
@@ -81,21 +94,23 @@ export function useUserViewModel(): UserViewModel {
 
       try {
         const result = await createUserHook(data);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findUser();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [createUserHook, findUser]
+    [createUserHook]
   );
 
   const updateUser = useCallback(
@@ -105,21 +120,23 @@ export function useUserViewModel(): UserViewModel {
 
       try {
         const result = await updateUserHook(data);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findUser();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [updateUserHook, findUser]
+    [updateUserHook]
   );
 
   const deleteUser = useCallback(
@@ -129,21 +146,23 @@ export function useUserViewModel(): UserViewModel {
 
       try {
         const result = await deleteUserHook(id);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findUser();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [deleteUserHook, findUser]
+    [deleteUserHook]
   );
 
   const bulkDeleteUser = useCallback(
@@ -153,21 +172,23 @@ export function useUserViewModel(): UserViewModel {
 
       try {
         const result = await bulkDeleteUserHook(ids);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findUser();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [bulkDeleteUserHook, findUser]
+    [bulkDeleteUserHook]
   );
 
   return {

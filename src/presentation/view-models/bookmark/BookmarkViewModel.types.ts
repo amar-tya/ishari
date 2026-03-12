@@ -12,7 +12,7 @@ export interface BookmarkViewModelState {
 }
 
 export interface BookmarkViewModelActions {
-  findBookmark: (criteria?: Partial<BookmarkFilter>) => Promise<void>;
+  findBookmark: (criteria?: Partial<BookmarkFilter>, options?: { silent?: boolean }) => Promise<void>;
   createBookmark: (data: BookmarkCreateRequest) => Promise<boolean>;
   updateBookmark: (data: BookmarkUpdateRequest) => Promise<boolean>;
   deleteBookmark: (id: number) => Promise<boolean>;

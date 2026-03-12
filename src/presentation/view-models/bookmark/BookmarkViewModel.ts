@@ -5,7 +5,7 @@ import {
   BookmarkUpdateRequest,
 } from '@/application/dto';
 import { useBookmark } from '@/presentation/hooks/useBookmark';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BookmarkViewModel,
   BookmarkViewModelActions,
@@ -38,10 +38,18 @@ export function useBookmarkViewModel(): BookmarkViewModel {
     search: '',
   });
 
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const findBookmark = useCallback(
-    async (newCriteria?: Partial<BookmarkFilter>) => {
-      setIsLoading(true);
-      setError(null);
+    async (newCriteria?: Partial<BookmarkFilter>, options?: { silent?: boolean }) => {
+      if (!options?.silent) {
+        setIsLoading(true);
+        setError(null);
+      }
 
       let criteriaToUse = criteria;
 
@@ -52,19 +60,24 @@ export function useBookmarkViewModel(): BookmarkViewModel {
 
       try {
         const result = await findBookmarkHook(criteriaToUse);
+        if (!mountedRef.current) return;
+
         if (result.success) {
           setBookmarkList(result.data);
         } else {
           setError(getErrorMessage(result.error));
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current && !options?.silent) setIsLoading(false);
       }
     },
     [findBookmarkHook, criteria]
   );
+
+  const fetchRef = useRef(findBookmark);
+  fetchRef.current = findBookmark;
 
   const createBookmark = useCallback(
     async (data: BookmarkCreateRequest) => {
@@ -73,21 +86,23 @@ export function useBookmarkViewModel(): BookmarkViewModel {
 
       try {
         const result = await createBookmarkHook(data);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findBookmark();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [createBookmarkHook, findBookmark]
+    [createBookmarkHook]
   );
 
   const updateBookmark = useCallback(
@@ -97,21 +112,23 @@ export function useBookmarkViewModel(): BookmarkViewModel {
 
       try {
         const result = await updateBookmarkHook(data);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findBookmark();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [updateBookmarkHook, findBookmark]
+    [updateBookmarkHook]
   );
 
   const deleteBookmark = useCallback(
@@ -121,21 +138,23 @@ export function useBookmarkViewModel(): BookmarkViewModel {
 
       try {
         const result = await deleteBookmarkHook(id);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findBookmark();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [deleteBookmarkHook, findBookmark]
+    [deleteBookmarkHook]
   );
 
   return {

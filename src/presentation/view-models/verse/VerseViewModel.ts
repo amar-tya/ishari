@@ -5,7 +5,7 @@ import {
   VerseUpdateRequest,
 } from '@/application/dto';
 import { useVerse } from '@/presentation/hooks';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   VerseViewModel,
   VerseViewModelActions,
@@ -37,11 +37,19 @@ export function useVerseViewModel(): VerseViewModel {
     transliteration: '',
   });
 
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   // Action
   const findVerse = useCallback(
-    async (newCriteria?: Partial<VerseRequest>) => {
-      setIsLoading(true);
-      setError(null);
+    async (newCriteria?: Partial<VerseRequest>, options?: { silent?: boolean }) => {
+      if (!options?.silent) {
+        setIsLoading(true);
+        setError(null);
+      }
 
       let criteriaToUse = criteria;
 
@@ -52,19 +60,24 @@ export function useVerseViewModel(): VerseViewModel {
 
       try {
         const result = await findVerseHook(criteriaToUse);
+        if (!mountedRef.current) return;
+
         if (result.success) {
           setVerseList(result.data);
         } else {
           setError(getErrorMessage(result.error));
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current && !options?.silent) setIsLoading(false);
       }
     },
     [findVerseHook, criteria]
   );
+
+  const fetchRef = useRef(findVerse);
+  fetchRef.current = findVerse;
 
   const createVerse = useCallback(
     async (data: VerseCreateRequest) => {
@@ -73,21 +86,23 @@ export function useVerseViewModel(): VerseViewModel {
 
       try {
         const result = await createVerseHook(data);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findVerse();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [createVerseHook, findVerse]
+    [createVerseHook]
   );
 
   const updateVerse = useCallback(
@@ -97,21 +112,23 @@ export function useVerseViewModel(): VerseViewModel {
 
       try {
         const result = await updateVerseHook(data);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findVerse();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [updateVerseHook, findVerse]
+    [updateVerseHook]
   );
 
   const deleteVerse = useCallback(
@@ -121,21 +138,23 @@ export function useVerseViewModel(): VerseViewModel {
 
       try {
         const result = await deleteVerseHook(id);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findVerse();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [deleteVerseHook, findVerse]
+    [deleteVerseHook]
   );
 
   const bulkDeleteVerse = useCallback(
@@ -145,21 +164,23 @@ export function useVerseViewModel(): VerseViewModel {
 
       try {
         const result = await bulkDeleteVerseHook(ids);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findVerse();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [bulkDeleteVerseHook, findVerse]
+    [bulkDeleteVerseHook]
   );
 
   return {

@@ -29,7 +29,8 @@ export default function HadiPage() {
 
   useEffect(() => {
     getHadiList();
-  }, [getHadiList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = (query: string) => {
     getHadiList(1, query);

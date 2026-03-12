@@ -46,7 +46,8 @@ export default function BooksPage() {
   // Fetch book list on mount
   useEffect(() => {
     getBookList();
-  }, [getBookList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Debounce search
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);

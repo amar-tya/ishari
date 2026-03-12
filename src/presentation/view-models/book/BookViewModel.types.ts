@@ -15,7 +15,7 @@ export interface BookViewModelState {
  */
 export interface BookViewModelActions {
   // List books
-  getBookList: (page?: number, search?: string) => Promise<void>;
+  getBookList: (page?: number, search?: string, options?: { silent?: boolean }) => Promise<void>;
   setPage: (page: number) => void;
   setSearch: (search: string) => void;
 

@@ -33,12 +33,31 @@ const getBlobURLs = async () => {
   return { coreURL: cachedCoreURL, wasmURL: cachedWasmURL };
 };
 
+const MAX_AUDIO_SIZE_BYTES = 100 * 1024 * 1024; // 100 MB
+
+// These formats are already compressed — no need to run FFmpeg on them.
+const ALREADY_COMPRESSED_EXTS = new Set([
+  '.mp3', '.opus', '.ogg', '.m4a', '.aac', '.webm',
+]);
+
 const compressAudio = async (
   file: File,
   updateProgress?: (p: number) => void
 ): Promise<File> => {
+  const ext = (file.name.match(/\.[0-9a-z]+$/i)?.[0] ?? '').toLowerCase();
+
+  // Skip FFmpeg entirely for already-compressed formats — avoids WASM crashes.
+  if (ALREADY_COMPRESSED_EXTS.has(ext)) {
+    return file;
+  }
+
+  if (file.size > MAX_AUDIO_SIZE_BYTES) {
+    throw new Error(
+      `File terlalu besar (${(file.size / 1024 / 1024).toFixed(1)} MB). Maksimum 100 MB.`
+    );
+  }
+
   // Create a fresh FFmpeg instance each time to avoid WASM memory accumulation
-  // that causes "RuntimeError: memory access out of bounds"
   const ffmpegInstance = new FFmpeg();
   const { coreURL, wasmURL } = await getBlobURLs();
 
@@ -72,9 +91,9 @@ const compressAudio = async (
 
     const fileData = await ffmpegInstance.readFile(outputName);
     const data = fileData as Uint8Array;
-    const blob = new Blob([data.buffer as unknown as BlobPart], {
-      type: 'audio/opus',
-    });
+    // Use `data` (not `data.buffer`) so only the file slice is used,
+    // not the entire WASM heap ArrayBuffer.
+    const blob = new Blob([data], { type: 'audio/opus' });
 
     const origNameWithoutExt = file.name.substring(
       0,
@@ -282,7 +301,10 @@ const VerseMediaFormInternal: React.FC<{
           console.error('Audio compression failed:', error);
           setErrors((prev) => ({
             ...prev,
-            file: 'Gagal mengkompresi audio. Coba lagi.',
+            file:
+              error instanceof Error
+                ? error.message
+                : 'Gagal mengkompresi audio. Coba lagi.',
           }));
           setIsCompressing(false);
           return;

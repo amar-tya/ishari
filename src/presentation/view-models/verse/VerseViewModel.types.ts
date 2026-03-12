@@ -12,7 +12,7 @@ export interface VerseViewModelState {
 }
 
 export interface VerseViewModelActions {
-  findVerse: (criteria?: Partial<VerseRequest>) => Promise<void>;
+  findVerse: (criteria?: Partial<VerseRequest>, options?: { silent?: boolean }) => Promise<void>;
   setCriteria: (criteria: VerseRequest) => void;
   createVerse: (data: VerseCreateRequest) => Promise<boolean>;
   updateVerse: (data: VerseUpdateRequest) => Promise<boolean>;

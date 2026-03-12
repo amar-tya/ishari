@@ -44,7 +44,8 @@ export default function VerseMediaPage() {
   useEffect(() => {
     getVerseMediaList();
     getHadiList();
-  }, [getVerseMediaList, getHadiList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = (query: string) => {
     setSearch(query);

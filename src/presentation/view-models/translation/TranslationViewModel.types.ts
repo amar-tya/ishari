@@ -18,7 +18,7 @@ export interface TranslationViewModelState {
 }
 
 export interface TranslationViewModelActions {
-  findTranslation: (criteria?: Partial<TranslationRequest>) => Promise<void>;
+  findTranslation: (criteria?: Partial<TranslationRequest>, options?: { silent?: boolean }) => Promise<void>;
   setCriteria: (criteria: TranslationRequest) => void;
   createTranslation: (data: TranslationCreateRequest) => Promise<boolean>;
   updateTranslation: (data: TranslationUpdateRequest) => Promise<boolean>;

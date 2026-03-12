@@ -7,7 +7,6 @@ import { useVerseViewModel } from '@/presentation/view-models/verse/VerseViewMod
 import { VerseEntity, ChapterEntity } from '@/core/entities';
 import { VerseCreateRequest, VerseUpdateRequest } from '@/application/dto';
 import { AdminVerseItem } from './AdminVerseItem';
-import { PublicSidebar } from '@/presentation/components/public/PublicSidebar';
 import { PublicAudioPlayer } from '@/presentation/components/public/PublicAudioPlayer';
 import { VerseActionSheet } from '@/presentation/components/public/VerseActionSheet';
 import { ChapterSelectionModal } from '@/presentation/components/public/ChapterSelectionModal';
@@ -20,6 +19,7 @@ import { ConfirmModal } from '@/presentation/components/base/ConfirmModal';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
   TranslationsIcon,
   PlusIcon,
 } from '@/presentation/components/base/icons';
@@ -84,6 +84,14 @@ export function AdminOverviewDashboard() {
     onConfirm: async () => {},
   });
 
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   // Fetch chapter + verses on chapterId / page change
   const fetchVerses = useCallback(
     async (page = 1) => {
@@ -94,6 +102,7 @@ export function AdminOverviewDashboard() {
           findChapter({ page: 1, limit: 1, chapterId }),
           findVerse({ page, limit: 30, chapterId }),
         ]);
+        if (!isMounted.current) return;
         if (chapterRes.success && chapterRes.data.data.length > 0) {
           setChapter(chapterRes.data.data[0]);
         }
@@ -105,20 +114,15 @@ export function AdminOverviewDashboard() {
       } catch (err) {
         console.error('Error fetching data:', err);
       } finally {
-        setLoading(false);
+        if (isMounted.current) setLoading(false);
       }
     },
     [chapterId, findChapter, findVerse]
   );
 
-  const isMounted = useRef(false);
   useEffect(() => {
-    isMounted.current = true;
     fetchVerses(1);
     findChapterList({ page: 1, limit: 100 });
-    return () => {
-      isMounted.current = false;
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapterId]);
 
@@ -201,30 +205,28 @@ export function AdminOverviewDashboard() {
 
   return (
     <>
-      <main className="flex-1 w-full max-w-350 mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Sidebar */}
-        <PublicSidebar
-          chapter={chapter}
-          showTranslation={showTranslation}
-          setShowTranslation={setShowTranslation}
-        />
-
-        {/* Center Column */}
-        <section className="lg:col-span-9 flex flex-col gap-6">
-          {/* Mobile Chapter Header */}
-          <div className="lg:hidden flex justify-between items-end mb-4">
-            <div
+      <main className="flex-1 w-full max-w-350 mx-auto p-6 grid grid-cols-1 gap-8">
+        {/* Chapter & Controls Bar */}
+        <section className="flex flex-col gap-6">
+          <div className="flex justify-between items-center">
+            <button
               onClick={() => setIsChapterModalOpen(true)}
-              className="cursor-pointer hover:opacity-80 transition-opacity"
+              className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity group"
             >
-              <h1 className="text-[clamp(1.25rem,4vw,1.75rem)] font-bold text-[#1e293b]">
-                {chapter?.title || 'Loading...'}
-              </h1>
-              <p className="text-[#475569]">
-                {chapter?.category || 'Meccan'} • {chapter?.totalVerses || 0}{' '}
-                Verses
-              </p>
-            </div>
+              <div className="text-left">
+                <h1 className="text-[clamp(1.25rem,4vw,1.75rem)] font-bold text-[#1e293b] leading-tight">
+                  {chapter?.title || 'Loading...'}
+                </h1>
+                <p className="text-sm text-[#475569]">
+                  {chapter?.category || 'Meccan'} • {chapter?.totalVerses || 0}{' '}
+                  Verses
+                </p>
+              </div>
+              <ChevronDownIcon
+                size={20}
+                className="text-slate-400 group-hover:text-[#51c878] transition-colors mt-0.5 shrink-0"
+              />
+            </button>
             <button
               onClick={() => setShowTranslation(!showTranslation)}
               className={`h-9 px-3 rounded-full flex items-center gap-1.5 transition-all outline-none border ${

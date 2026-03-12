@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useChapter } from '@/presentation/hooks';
 import {
   ChapterCreateRequest,
@@ -39,11 +39,19 @@ export function useChapterViewModel(): ChapterViewModel {
     chapterId: undefined,
   });
 
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   // Action
   const findChapter = useCallback(
-    async (newCriteria?: Partial<ChapterRequest>) => {
-      setIsLoading(true);
-      setError(null);
+    async (newCriteria?: Partial<ChapterRequest>, options?: { silent?: boolean }) => {
+      if (!options?.silent) {
+        setIsLoading(true);
+        setError(null);
+      }
 
       let criteriaToUse = criteria;
 
@@ -54,66 +62,75 @@ export function useChapterViewModel(): ChapterViewModel {
 
       try {
         const result = await findChapterHook(criteriaToUse);
+        if (!mountedRef.current) return;
+
         if (result.success) {
           setChapterList(result.data);
         } else {
           setError(getErrorMessage(result.error));
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current && !options?.silent) setIsLoading(false);
       }
     },
     [findChapterHook, criteria]
   );
 
+  const fetchRef = useRef(findChapter);
+  fetchRef.current = findChapter;
+
   const createChapter = useCallback(
-    async (criteria: ChapterCreateRequest) => {
+    async (data: ChapterCreateRequest) => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const result = await createChapterHook(criteria);
+        const result = await createChapterHook(data);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findChapter();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [createChapterHook, findChapter]
+    [createChapterHook]
   );
 
   const updateChapter = useCallback(
-    async (criteria: ChapterUpdateRequest) => {
+    async (data: ChapterUpdateRequest) => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const result = await updateChapterHook(criteria);
+        const result = await updateChapterHook(data);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findChapter();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [updateChapterHook, findChapter]
+    [updateChapterHook]
   );
 
   const deleteChapter = useCallback(
@@ -123,21 +140,23 @@ export function useChapterViewModel(): ChapterViewModel {
 
       try {
         const result = await deleteChapterHook(id);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findChapter();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [deleteChapterHook, findChapter]
+    [deleteChapterHook]
   );
 
   const bulkDeleteChapter = useCallback(
@@ -147,21 +166,23 @@ export function useChapterViewModel(): ChapterViewModel {
 
       try {
         const result = await bulkDeleteChapterHook(ids);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await findChapter();
+          await fetchRef.current(undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [bulkDeleteChapterHook, findChapter]
+    [bulkDeleteChapterHook]
   );
 
   return {

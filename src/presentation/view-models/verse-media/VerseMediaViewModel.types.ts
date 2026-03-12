@@ -9,7 +9,8 @@ export interface VerseMediaViewModel {
     page?: number,
     search?: string,
     hadiId?: number,
-    verseId?: number
+    verseId?: number,
+    options?: { silent?: boolean }
   ) => Promise<void>;
   setPage: (page: number) => void;
   setSearch: (search: string) => void;

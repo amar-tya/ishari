@@ -1,4 +1,4 @@
-import { HadiEntity, HadiEntityList } from '@/core/entities';
+import { HadiEntityList } from '@/core/entities';
 import { CreateHadiDTO, UpdateHadiDTO } from '@/application/dto';
 
 export interface HadiViewModelState {
@@ -8,7 +8,7 @@ export interface HadiViewModelState {
 }
 
 export interface HadiViewModelActions {
-  getHadiList: (page?: number, search?: string) => Promise<void>;
+  getHadiList: (page?: number, search?: string, options?: { silent?: boolean }) => Promise<void>;
   storeHadi: (dto: CreateHadiDTO) => Promise<boolean>;
   updateHadi: (id: number, dto: UpdateHadiDTO) => Promise<boolean>;
   removeHadi: (id: number) => Promise<boolean>;

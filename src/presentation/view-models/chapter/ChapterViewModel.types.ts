@@ -12,7 +12,7 @@ export interface ChapterViewModelState {
 }
 
 export interface ChapterViewModelActions {
-  findChapter: (criteria?: Partial<ChapterRequest>) => Promise<void>;
+  findChapter: (criteria?: Partial<ChapterRequest>, options?: { silent?: boolean }) => Promise<void>;
   setCriteria: (criteria: ChapterRequest) => void;
   createChapter: (criteria: ChapterCreateRequest) => Promise<boolean>;
   updateChapter: (criteria: ChapterUpdateRequest) => Promise<boolean>;

@@ -42,34 +42,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    async function fetchUser() {
-      const { data: { user: supabaseUser }, error } = await supabaseBrowserClient.auth.getUser();
-
-      if (!mounted) return;
-
-      if (error || !supabaseUser) {
-        setUser(null);
-        setIsLoading(false);
-        return;
-      }
-
-      const appUser = await fetchUserFromDb(supabaseUser);
-      if (mounted) {
-        setUser(appUser);
-        setIsLoading(false);
-      }
-    }
-
-    fetchUser();
-
+    // onAuthStateChange fires INITIAL_SESSION immediately with the current
+    // session (from cookies), so no separate getUser() call needed.
     const { data: { subscription } } = supabaseBrowserClient.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
         if (session?.user) {
           const appUser = await fetchUserFromDb(session.user);
-          if (mounted) setUser(appUser);
+          if (mounted) {
+            setUser(appUser);
+            setIsLoading(false);
+          }
         } else {
           setUser(null);
+          setIsLoading(false);
         }
       }
     );

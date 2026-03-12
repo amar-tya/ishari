@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { BookEntityList } from "@/core/entities";
 import { useBook } from "@/presentation/hooks";
 import { getErrorMessage } from "@/shared/utils";
@@ -35,11 +35,20 @@ export function useBookViewModel(): BookViewModel {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
 
+  // Refs for safe async operations
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   // Actions
   const getBookList = useCallback(
-    async (pageParam?: number, searchParam?: string) => {
-      setIsLoading(true);
-      setError(null);
+    async (pageParam?: number, searchParam?: string, options?: { silent?: boolean }) => {
+      if (!options?.silent) {
+        setIsLoading(true);
+        setError(null);
+      }
 
       const currentPage = pageParam ?? page;
       const currentSearch = searchParam ?? search;
@@ -50,19 +59,25 @@ export function useBookViewModel(): BookViewModel {
           search: currentSearch || undefined,
         });
 
+        if (!mountedRef.current) return;
+
         if (result.success) {
           setBookList(result.data);
         } else {
           setError(getErrorMessage(result.error));
         }
       } catch (err) {
-        setError(getErrorMessage(err));
+        if (mountedRef.current) setError(getErrorMessage(err));
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current && !options?.silent) setIsLoading(false);
       }
     },
-    [listBook],
+    [listBook, page, search],
   );
+
+  // Ref to always point to latest getBookList (breaks useCallback chain)
+  const fetchRef = useRef(getBookList);
+  fetchRef.current = getBookList;
 
   const storeBook = useCallback(
     async (dto: CreateBookDTO) => {
@@ -71,21 +86,23 @@ export function useBookViewModel(): BookViewModel {
 
       try {
         const result = await createBook(dto);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await getBookList();
+          await fetchRef.current(undefined, undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (error) {
-        setError(getErrorMessage(error));
+        if (mountedRef.current) setError(getErrorMessage(error));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [createBook, getBookList],
+    [createBook],
   );
 
   const updateBook = useCallback(
@@ -95,21 +112,23 @@ export function useBookViewModel(): BookViewModel {
 
       try {
         const result = await updateBookHook(id, dto);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await getBookList();
+          await fetchRef.current(undefined, undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (error) {
-        setError(getErrorMessage(error));
+        if (mountedRef.current) setError(getErrorMessage(error));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [updateBookHook, getBookList],
+    [updateBookHook],
   );
 
   const removeBook = useCallback(
@@ -119,21 +138,23 @@ export function useBookViewModel(): BookViewModel {
 
       try {
         const result = await deleteBook(id);
+        if (!mountedRef.current) return false;
+
         if (result.success) {
-          await getBookList();
+          await fetchRef.current(undefined, undefined, { silent: true });
           return true;
         } else {
           setError(getErrorMessage(result.error));
           return false;
         }
       } catch (error) {
-        setError(getErrorMessage(error));
+        if (mountedRef.current) setError(getErrorMessage(error));
         return false;
       } finally {
-        setIsLoading(false);
+        if (mountedRef.current) setIsLoading(false);
       }
     },
-    [deleteBook, getBookList],
+    [deleteBook],
   );
 
   return {

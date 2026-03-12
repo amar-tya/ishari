@@ -45,10 +45,13 @@ export function BookmarkList() {
       return;
     }
 
+    let cancelled = false;
+
     const fetchData = async () => {
       setLoading(true);
       try {
         const bookmarkRes = await findBookmark({ page: 1, limit: 1000 });
+        if (cancelled) return;
         if (!bookmarkRes.success || bookmarkRes.data.data.length === 0) {
           setItems([]);
           return;
@@ -63,6 +66,7 @@ export function BookmarkList() {
           verseIds,
         });
 
+        if (cancelled) return;
         if (!verseRes.success) {
           setItems([]);
           return;
@@ -81,11 +85,12 @@ export function BookmarkList() {
 
         setItems(combined);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchData();
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isUserLoading]);
 
