@@ -45,3 +45,6 @@ next-env.d.ts
 nimbalyst-local
 plans
 .mcp.json
+
+# playwright
+/.playwright-mcp
