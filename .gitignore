@@ -50,5 +50,5 @@ plans
 /.playwright-mcp
 
 # claude code
-.claude/settings.local.json
+.claude/
 *.png
