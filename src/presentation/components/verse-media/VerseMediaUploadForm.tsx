@@ -90,10 +90,9 @@ const compressAudio = async (
     ]);
 
     const fileData = await ffmpegInstance.readFile(outputName);
-    const data = fileData as Uint8Array;
-    // Use `data` (not `data.buffer`) so only the file slice is used,
-    // not the entire WASM heap ArrayBuffer.
-    const blob = new Blob([data], { type: 'audio/opus' });
+    // .slice() copies only the file bytes into a plain ArrayBuffer,
+    // avoiding both the WASM heap blob issue and the TS ArrayBufferLike error.
+    const blob = new Blob([(fileData as Uint8Array).slice()], { type: 'audio/opus' });
 
     const origNameWithoutExt = file.name.substring(
       0,

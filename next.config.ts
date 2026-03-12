@@ -1,7 +1,8 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Disabled to eliminate StrictMode double-invoke as a variable during debugging.
+  reactStrictMode: false,
   webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
