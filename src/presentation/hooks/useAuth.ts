@@ -41,15 +41,10 @@ export function useAuth(): UseAuthReturn {
   }, [authRepository]);
 
   const logout = useCallback(async () => {
-    try {
-      await authRepository.logout();
-    } catch {
-      // Ignore API errors
-    }
-    authService.clearTokens();
-    // Hard redirect untuk clear seluruh state Supabase session
-    window.location.href = '/login';
-  }, [authService, authRepository]);
+    // Redirect ke server-side signout route agar Supabase auth cookies
+    // benar-benar terhapus di server sebelum masuk ke /login
+    window.location.href = '/api/auth/signout';
+  }, []);
 
   const isAuthenticated = useCallback(() => {
     return authService.hasValidSession();
