@@ -61,19 +61,9 @@ export async function proxy(request: NextRequest) {
 
   const isAuthenticated = !!user;
 
-  // Dapatkan role dari tabel public.users berdasarkan email
-  // (user_metadata tidak reliable karena bisa kosong)
-  let role = 'user';
-  if (user?.email) {
-    const { data: dbUser } = await supabase
-      .from('users')
-      .select('role')
-      .eq('email', user.email)
-      .single();
-    if (dbUser?.role) {
-      role = dbUser.role;
-    }
-  }
+  // Role dibaca dari app_metadata (JWT claim), bukan query DB.
+  // app_metadata di-sync otomatis via trigger saat public.users.role berubah.
+  const role: string = user?.app_metadata?.role ?? 'user';
 
   // Sudah login tapi akses halaman auth → redirect ke dashboard
   if (
