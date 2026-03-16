@@ -59,11 +59,20 @@ export class AuthService implements IAuthService {
   }
 
   hasValidSession(): boolean {
-    // Cek via cookie yang diset oleh Supabase SSR middleware
-    if (typeof document === 'undefined') return false;
-    return (
-      document.cookie.includes('sb-') && document.cookie.includes('-auth-token')
-    );
+    // Cek access token di localStorage dan validasi expiry-nya
+    if (typeof localStorage === 'undefined') return false;
+    try {
+      const keys = Object.keys(localStorage);
+      const sessionKey = keys.find((k) => k.includes('auth-token'));
+      if (!sessionKey) return false;
+      const data = JSON.parse(localStorage.getItem(sessionKey) ?? '{}');
+      const expiresAt: number | undefined = data?.expires_at;
+      if (!expiresAt) return false;
+      // Buffer 60 detik agar tidak race antara check dan actual expiry
+      return expiresAt - 60 > Math.floor(Date.now() / 1000);
+    } catch {
+      return false;
+    }
   }
 
   getUser(): User | null {
