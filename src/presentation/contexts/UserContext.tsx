@@ -13,11 +13,17 @@ interface UserContextValue {
 const UserContext = createContext<UserContextValue>({ user: null, isLoading: true });
 
 async function fetchUserFromDb(supabaseUser: SupabaseUser): Promise<User> {
-  const { data: dbUser, error } = await supabaseBrowserClient
+  const queryPromise = supabaseBrowserClient
     .from('users')
     .select('id, email, username, role, is_active')
     .eq('id', supabaseUser.id)
     .single();
+
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('fetchUserFromDb timeout')), 8000)
+  );
+
+  const { data: dbUser, error } = await Promise.race([queryPromise, timeoutPromise]);
 
   // PGRST116 = no rows found (user baru, belum ada di public.users)
   if (error && error.code !== 'PGRST116') {
@@ -94,9 +100,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        // Memaksa Supabase cek dan refresh token saat user kembali ke tab.
+        // TOKEN_REFRESHED akan fire jika refresh berhasil, SIGNED_OUT jika expired.
+        await supabaseBrowserClient.auth.getSession();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
