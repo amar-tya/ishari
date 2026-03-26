@@ -24,18 +24,45 @@ export class BookmarkRepository implements IBookmarkRepositoryPort {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    let query = this.supabase
+    // Auto-resolve integer user_id jika tidak di-pass secara eksplisit.
+    // Pola sama dengan create() — lookup via email karena public.users.id = integer,
+    // bukan UUID (tidak ada FK langsung ke auth.users).
+    let resolvedUserId: number | null = criteria.userId ?? null;
+
+    if (resolvedUserId === null) {
+      const { data: { user: authUser }, error: authError } =
+        await this.supabase.auth.getUser();
+
+      if (authError || !authUser) {
+        return success(BookmarkMapper.toDomainList({
+          data: [],
+          meta: { total: 0, total_pages: 0, page, limit, count: 0 },
+        }));
+      }
+
+      const { data: dbUser, error: userError } = await this.supabase
+        .from('users')
+        .select('id')
+        .eq('email', authUser.email)
+        .single();
+
+      if (userError || !dbUser) {
+        return success(BookmarkMapper.toDomainList({
+          data: [],
+          meta: { total: 0, total_pages: 0, page, limit, count: 0 },
+        }));
+      }
+
+      resolvedUserId = dbUser.id;
+    }
+
+    const { data, error, count } = await this.supabase
       .from('bookmarks')
       .select('*', { count: 'exact' })
       .is('deleted_at', null)
+      .eq('user_id', resolvedUserId)
       .range(from, to)
       .order('id', { ascending: false });
-
-    if (criteria.userId) {
-      query = query.eq('user_id', criteria.userId);
-    }
-
-    const { data, error, count } = await query;
 
     if (error) return failure(new ServerError(error.message));
 

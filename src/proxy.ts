@@ -10,6 +10,7 @@ const publicRoutes = [
   '/muhud',
   '/diba',
   '/kitab',
+  '/bookmark',
 ];
 
 function isPublicRoute(pathname: string): boolean {
@@ -55,9 +56,15 @@ export async function proxy(request: NextRequest) {
 
   // PENTING: jangan tambahkan kode antara createServerClient dan getUser
   // Lihat: https://supabase.com/docs/guides/auth/server-side/nextjs
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Wrapped try/catch: jika Supabase tidak bisa dijangkau (network error/timeout),
+  // treat sebagai unauthenticated — public routes tetap load, protected redirect ke login.
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    user = null;
+  }
 
   const isAuthenticated = !!user;
 
