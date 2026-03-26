@@ -15,8 +15,8 @@ const UserContext = createContext<UserContextValue>({ user: null, isLoading: tru
 async function fetchUserFromDb(supabaseUser: SupabaseUser): Promise<User> {
   const queryPromise = supabaseBrowserClient
     .from('users')
-    .select('id, email, username, role, is_active')
-    .eq('id', supabaseUser.id)
+    .select('username, role, is_active')
+    .eq('email', supabaseUser.email)
     .single();
 
   const timeoutPromise = new Promise<never>((_, reject) =>
@@ -31,7 +31,7 @@ async function fetchUserFromDb(supabaseUser: SupabaseUser): Promise<User> {
   }
 
   return {
-    id: dbUser?.id ?? supabaseUser.id,
+    id: supabaseUser.id,
     email: supabaseUser.email ?? '',
     username:
       dbUser?.username ??
