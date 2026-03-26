@@ -53,6 +53,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    // Proactively trigger token refresh on mount. Penting untuk mobile (Android)
+    // di mana @supabase/ssr berbasis cookies — memastikan refresh dimulai segera
+    // sebelum menunggu INITIAL_SESSION event.
+    void supabaseBrowserClient.auth.getSession();
+
+    // Safety net: jika isLoading masih true setelah 10 detik (SDK bug, network mati
+    // total, dll), paksa selesai agar UI tidak stuck selamanya.
+    const safetyTimeoutId = setTimeout(() => {
+      if (mounted) setIsLoading(false);
+    }, 10000);
+
     // onAuthStateChange fires INITIAL_SESSION immediately with the current
     // session (from cookies), so no separate getUser() call needed.
     const { data: { subscription } } = supabaseBrowserClient.auth.onAuthStateChange(
@@ -114,6 +125,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
       subscription.unsubscribe();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearTimeout(safetyTimeoutId);
     };
   }, []);
 
