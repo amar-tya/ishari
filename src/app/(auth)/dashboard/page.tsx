@@ -20,8 +20,8 @@ import {
   PendingApprovalCard,
   RecentUpdatesTable,
 } from '@/presentation/components/dashboard';
-import { useUser, useStats } from '@/presentation/hooks';
-import { DashboardStatsEntity } from '@/core/entities';
+import { useUser, useStats, useAuditLog } from '@/presentation/hooks';
+import { AuditLogEntity, DashboardStatsEntity } from '@/core/entities';
 
 const quickActions = [
   {
@@ -53,33 +53,6 @@ const quickActions = [
 const notificationsData = [
   { id: '1', message: 'System updates available', type: 'info' as const },
   { id: '2', message: 'New user registration', type: 'info' as const },
-];
-
-const recentUpdatesData = [
-  {
-    id: '1',
-    entity: 'Verse #4023',
-    action: 'Text Update',
-    user: { name: 'John Doe', initials: 'JD' },
-    time: '2 mins ago',
-    status: 'completed' as const,
-  },
-  {
-    id: '2',
-    entity: 'Translation: EN_V2',
-    action: 'New Registration',
-    user: { name: 'Alice Smith', initials: 'AS' },
-    time: '45 mins ago',
-    status: 'pending' as const,
-  },
-  {
-    id: '3',
-    entity: 'User: M. Scott',
-    action: 'Role Change',
-    user: { name: 'Admin', initials: 'AD' },
-    time: '2 hours ago',
-    status: 'completed' as const,
-  },
 ];
 
 function buildStatsCards(stats: DashboardStatsEntity) {
@@ -132,12 +105,65 @@ function buildStatsCards(stats: DashboardStatsEntity) {
   ];
 }
 
+const OPERATION_LABEL: Record<string, string> = {
+  INSERT: 'Created',
+  UPDATE: 'Updated',
+  DELETE: 'Deleted',
+};
+
+function formatTableName(tableName: string): string {
+  return tableName
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatRelativeTime(isoString: string): string {
+  const diff = Date.now() - new Date(isoString).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min${mins > 1 ? 's' : ''} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days > 1 ? 's' : ''} ago`;
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function mapAuditLogsToTableData(logs: AuditLogEntity[]) {
+  return logs.map((log) => {
+    const userName = log.changedByUserName ?? 'Unknown';
+    return {
+      id: String(log.id),
+      entity: `${formatTableName(log.tableName)} #${log.recordId}`,
+      action: OPERATION_LABEL[log.operation] ?? log.operation,
+      user: {
+        name: userName,
+        initials: getInitials(userName),
+      },
+      time: formatRelativeTime(log.changedAt),
+      status: 'completed' as const,
+    };
+  });
+}
+
 export default function DashboardPage() {
   const { user } = useUser();
   const { getDashboardStats } = useStats();
+  const { listRecentAuditLogs } = useAuditLog();
 
   const [stats, setStats] = useState<DashboardStatsEntity | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntity[]>([]);
+  const [isLoadingAuditLogs, setIsLoadingAuditLogs] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -155,7 +181,24 @@ export default function DashboardPage() {
     fetchStats();
   }, [getDashboardStats, user]);
 
+  useEffect(() => {
+    if (!user) return;
+    const fetchAuditLogs = async () => {
+      setIsLoadingAuditLogs(true);
+      try {
+        const result = await listRecentAuditLogs({ userEmail: user.email, role: user.role });
+        if (result.success) {
+          setAuditLogs(result.data);
+        }
+      } finally {
+        setIsLoadingAuditLogs(false);
+      }
+    };
+    fetchAuditLogs();
+  }, [listRecentAuditLogs, user]);
+
   const statsCards = stats ? buildStatsCards(stats) : [];
+  const recentUpdatesData = mapAuditLogsToTableData(auditLogs);
 
   return (
     <div className="space-y-6">
@@ -182,8 +225,7 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {isLoadingStats
-          ? // Skeleton loading placeholders
-            Array.from({ length: 5 }).map((_, index) => (
+          ? Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={index}
                 className="animate-pulse rounded-xl bg-gray-100 h-28"
@@ -224,7 +266,10 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent Updates */}
-          <RecentUpdatesTable data={recentUpdatesData} />
+          <RecentUpdatesTable
+            data={recentUpdatesData}
+            isLoading={isLoadingAuditLogs}
+          />
         </div>
 
         {/* Right Column - Sidebar */}

@@ -8,3 +8,4 @@ export * from './bookmark.repository.port';
 export * from './hadi.repository.port';
 export * from './verse-media.repository.port';
 export * from './stats.repository.port';
+export * from './audit-log.repository.port';

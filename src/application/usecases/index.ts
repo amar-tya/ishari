@@ -8,3 +8,4 @@ export * from './bookmark';
 export * from './hadi';
 export * from './verse-media';
 export * from './stats';
+export * from './audit-log';

@@ -14,3 +14,4 @@ export * from './useChapter';
 export * from './useVerse';
 export * from './useTranslation';
 export * from './useStats';
+export * from './useAuditLog';
