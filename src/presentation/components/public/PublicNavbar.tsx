@@ -90,19 +90,14 @@ export function PublicNavbar() {
           </nav>
         </div>
         <div className="flex items-center gap-4 md:gap-6">
-          {/* Search Bar - Hidden on small mobile, visible on desktop/large tablet */}
-          {/* <div className="hidden lg:flex items-center bg-white shadow-[inset_2px_2px_5px_rgba(0,0,0,0.05),inset_-2px_-2px_5px_rgba(255,255,255,0.8)] rounded-full px-4 h-10 w-64 border border-slate-100">
-            <SearchIcon className="text-[#51c878]/60" size={20} />
-            <input
-              className="bg-transparent border-none focus:ring-0 text-sm w-full text-[#1e293b] placeholder-slate-400 outline-none ml-2"
-              placeholder="Search surah or verse..."
-              type="text"
-            />
-          </div> */}
-
-          {/* <button className="lg:hidden p-2 text-slate-500 hover:text-[#51c878]">
-            <SearchIcon size={20} />
-          </button> */}
+          <a
+            href="https://play.google.com/store/apps/details?id=com.ishari.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex items-center gap-1.5 bg-[#51c878] text-white rounded-full px-4 py-2 text-sm font-medium hover:bg-[#3db862] transition-colors"
+          >
+            Download App
+          </a>
 
           {/* User Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
@@ -246,6 +241,15 @@ export function PublicNavbar() {
                 Bookmark
               </Link>
             )}
+            <a
+              href="https://play.google.com/store/apps/details?id=com.ishari.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-lg font-medium text-[#51c878]"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Download App
+            </a>
           </nav>
         </div>
       )}
