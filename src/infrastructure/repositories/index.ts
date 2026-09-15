@@ -6,5 +6,6 @@ export * from './user.repository';
 export * from './bookmark.repository';
 export * from './hadi.repository';
 export * from './verse-media.repository';
+export * from './chapter-media.repository';
 export * from './stats.repository';
 export * from './audit-log.repository';

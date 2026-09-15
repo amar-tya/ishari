@@ -9,6 +9,7 @@ export * from './useUser';
 export * from './useBookmark';
 export * from './useHadi';
 export * from './useVerseMedia';
+export * from './useChapterMedia';
 export * from './useBook';
 export * from './useChapter';
 export * from './useVerse';

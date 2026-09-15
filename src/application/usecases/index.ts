@@ -7,5 +7,6 @@ export * from './user';
 export * from './bookmark';
 export * from './hadi';
 export * from './verse-media';
+export * from './chapter-media';
 export * from './stats';
 export * from './audit-log';

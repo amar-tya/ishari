@@ -42,6 +42,11 @@ import {
   FindVerseMediaUseCase,
   ListVerseMediaUseCase,
   GetRandomVerseMediaUseCase,
+  UploadChapterMediaUseCase,
+  UpdateChapterMediaUseCase,
+  DeleteChapterMediaUseCase,
+  FindChapterMediaUseCase,
+  ListChapterMediaUseCase,
 } from '@/application/usecases';
 import {
   IBookRepository,
@@ -52,6 +57,7 @@ import {
   IHadiRepository,
   IStatsRepository,
   IVerseMediaRepository,
+  IChapterMediaRepository,
   IAuditLogRepository,
 } from '@/application/ports';
 import {
@@ -64,6 +70,7 @@ import {
   HadiRepository,
   StatsRepository,
   VerseMediaRepository,
+  ChapterMediaRepository,
   AuditLogRepository,
 } from '@/infrastructure/repositories';
 import { AuthService } from '@/infrastructure/services';
@@ -110,6 +117,8 @@ const statsRepository: IStatsRepository = new StatsRepository(
 const verseMediaRepository: IVerseMediaRepository = new VerseMediaRepository(
   supabaseBrowserClient
 );
+const chapterMediaRepository: IChapterMediaRepository =
+  new ChapterMediaRepository(supabaseBrowserClient);
 const auditLogRepository: IAuditLogRepository = new AuditLogRepository(
   supabaseBrowserClient
 );
@@ -202,6 +211,23 @@ const getRandomVerseMediaUseCase = new GetRandomVerseMediaUseCase(
   verseMediaRepository
 );
 
+// Use Cases - Chapter Media
+const uploadChapterMediaUseCase = new UploadChapterMediaUseCase(
+  chapterMediaRepository
+);
+const updateChapterMediaUseCase = new UpdateChapterMediaUseCase(
+  chapterMediaRepository
+);
+const deleteChapterMediaUseCase = new DeleteChapterMediaUseCase(
+  chapterMediaRepository
+);
+const findChapterMediaUseCase = new FindChapterMediaUseCase(
+  chapterMediaRepository
+);
+const listChapterMediaUseCase = new ListChapterMediaUseCase(
+  chapterMediaRepository
+);
+
 /**
  * Container exports
  */
@@ -272,6 +298,13 @@ export const container = {
   listVerseMediaUseCase,
   getRandomVerseMediaUseCase,
 
+  // Use Cases - Chapter Media
+  uploadChapterMediaUseCase,
+  updateChapterMediaUseCase,
+  deleteChapterMediaUseCase,
+  findChapterMediaUseCase,
+  listChapterMediaUseCase,
+
   // Services
   authService,
 
@@ -285,6 +318,7 @@ export const container = {
   bookmarkRepository,
   hadiRepository,
   verseMediaRepository,
+  chapterMediaRepository,
 } as const;
 
 export type Container = typeof container;

@@ -7,5 +7,6 @@ export * from './user.entity';
 export * from './bookmark.entity';
 export * from './hadi.entity';
 export * from './verse-media.entity';
+export * from './chapter-media.entity';
 export * from './stats.entity';
 export * from './audit-log.entity';

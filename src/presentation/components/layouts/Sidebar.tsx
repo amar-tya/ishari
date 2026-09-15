@@ -67,6 +67,11 @@ const navGroups: NavGroup[] = [
       { label: 'Verses', href: '/verses', icon: <VersesIcon /> },
       { label: 'Hadi', href: '/hadi', icon: <UserIcon /> },
       { label: 'Verse Media', href: '/verse-media', icon: <VerseMediaIcon /> },
+      {
+        label: 'Chapter Media',
+        href: '/chapter-media',
+        icon: <VerseMediaIcon />,
+      },
     ],
   },
 ];

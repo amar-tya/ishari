@@ -6,4 +6,5 @@ export * from './user.model';
 export * from './bookmark.model';
 export * from './hadi.model';
 export * from './verse-media.model';
+export * from './chapter-media.model';
 export * from './stats.model';

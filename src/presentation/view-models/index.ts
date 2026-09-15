@@ -4,5 +4,6 @@ export * from './verse/VerseViewModel';
 export * from './translation/TranslationViewModel';
 export * from './hadi/HadiViewModel';
 export * from './verse-media';
+export * from './chapter-media';
 export * from './login/LoginViewModel';
 export * from './layout/LayoutViewModel';
