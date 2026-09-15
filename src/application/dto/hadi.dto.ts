@@ -4,12 +4,14 @@ export interface CreateHadiDTO {
   name: string;
   description?: string;
   image_url?: string;
+  photo?: File;
 }
 
 export interface UpdateHadiDTO {
   name?: string;
   description?: string;
   image_url?: string;
+  photo?: File;
 }
 
 export interface ListHadiDTO {

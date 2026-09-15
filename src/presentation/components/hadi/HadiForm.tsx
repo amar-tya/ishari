@@ -5,10 +5,12 @@ import { HadiEntity } from '@/core/entities';
 
 export type HadiFormMode = 'create' | 'edit';
 
+const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+
 export interface HadiFormData {
   name: string;
   description: string;
-  image_url: string;
+  photo: File | null;
 }
 
 interface HadiFormProps {
@@ -25,14 +27,14 @@ function entityToFormData(entity: HadiEntity): HadiFormData {
   return {
     name: entity.name || '',
     description: entity.description || '',
-    image_url: entity.imageUrl || '',
+    photo: null,
   };
 }
 
 const INITIAL_STATE: HadiFormData = {
   name: '',
   description: '',
-  image_url: '',
+  photo: null,
 };
 
 const HadiFormInternal: React.FC<{
@@ -50,6 +52,9 @@ const HadiFormInternal: React.FC<{
 
   const [formData, setFormData] = useState<HadiFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [photoPreview, setPhotoPreview] = useState<string | null>(
+    mode === 'edit' && initialData ? initialData.imageUrl : null
+  );
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -64,21 +69,11 @@ const HadiFormInternal: React.FC<{
     e.preventDefault();
     if (!validate()) return;
 
-    let submitData: CreateHadiDTO | UpdateHadiDTO;
-
-    if (mode === 'edit' && initialData) {
-      submitData = {
-        name: formData.name,
-        description: formData.description.trim() || undefined,
-        image_url: formData.image_url.trim() || undefined,
-      } as UpdateHadiDTO;
-    } else {
-      submitData = {
-        name: formData.name,
-        description: formData.description.trim() || undefined,
-        image_url: formData.image_url.trim() || undefined,
-      } as CreateHadiDTO;
-    }
+    const submitData: CreateHadiDTO | UpdateHadiDTO = {
+      name: formData.name,
+      description: formData.description.trim() || undefined,
+      photo: formData.photo || undefined,
+    };
 
     const success = await onSubmit(submitData);
     if (success) {
@@ -104,6 +99,23 @@ const HadiFormInternal: React.FC<{
         return newErrors;
       });
     }
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > MAX_PHOTO_SIZE_BYTES) {
+      setErrors((prev) => ({
+        ...prev,
+        photo: `File terlalu besar (${(file.size / 1024 / 1024).toFixed(1)} MB). Maksimum 5 MB.`,
+      }));
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, photo: file }));
+    setPhotoPreview(URL.createObjectURL(file));
+    if (errors.photo) setErrors((prev) => ({ ...prev, photo: '' }));
   };
 
   return (
@@ -134,15 +146,39 @@ const HadiFormInternal: React.FC<{
         rows={3}
       />
 
-      <Input
-        label="Photo URL"
-        name="image_url"
-        placeholder="https://example.com/photo.jpg"
-        value={formData.image_url}
-        onChange={handleChange}
-        error={errors.image_url}
-        disabled={isLoading}
-      />
+      <div className="flex flex-col gap-2">
+        <label className="text-body font-semibold text-text-primary">
+          Photo
+        </label>
+        {photoPreview && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photoPreview}
+            alt="Preview foto hadi"
+            className="w-24 h-24 rounded-xl object-cover border border-border-light"
+          />
+        )}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoChange}
+          disabled={isLoading}
+          className="block w-full text-sm text-gray-500
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-full file:border-0
+            file:text-sm file:font-semibold
+            file:bg-primary/10 file:text-primary
+            hover:file:bg-primary/20 cursor-pointer"
+        />
+        {errors.photo && (
+          <p className="text-sm text-error mt-1">{errors.photo}</p>
+        )}
+        {mode === 'edit' && !formData.photo && (
+          <p className="text-sm text-text-secondary">
+            Biarkan kosong jika tidak ingin mengubah foto.
+          </p>
+        )}
+      </div>
 
       <div className="flex items-center justify-end gap-3 pt-2">
         <Button
