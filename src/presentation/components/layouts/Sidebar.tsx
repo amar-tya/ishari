@@ -192,6 +192,7 @@ export const Sidebar: React.FC = () => {
           {/* Toggle Button */}
           <button
             onClick={toggleSidebar}
+            suppressHydrationWarning
             className="
             w-full flex items-center justify-center p-4
             text-[var(--color-text-muted)] hover:text-[var(--color-primary)]
@@ -215,6 +216,7 @@ export const Sidebar: React.FC = () => {
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
+              suppressHydrationWarning
               className={`
               flex items-center gap-3 w-full rounded-lg
               bg-red-50 text-red-600

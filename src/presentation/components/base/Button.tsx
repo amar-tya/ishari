@@ -36,6 +36,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+      suppressHydrationWarning
       {...props}
     >
       {icon && <span className="flex-shrink-0">{icon}</span>}

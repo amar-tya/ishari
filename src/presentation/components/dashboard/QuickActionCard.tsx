@@ -20,6 +20,7 @@ export const QuickActionCard: React.FC<QuickActionCardProps> = ({
   return (
     <button
       onClick={onClick}
+      suppressHydrationWarning
       className={`
         flex flex-col items-center justify-center
         bg-[var(--color-bg-card)]

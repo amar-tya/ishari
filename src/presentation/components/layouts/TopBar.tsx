@@ -60,6 +60,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       <div className="flex items-center gap-3">
         <button
           onClick={openMobileMenu}
+          suppressHydrationWarning
           className="lg:hidden p-2 -ml-2 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors"
         >
           <MenuIcon size={24} />
@@ -100,6 +101,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Public View Link */}
         <button
           onClick={() => router.push('/')}
+          suppressHydrationWarning
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-bg-hover)] transition-all group"
           title="Lihat Halaman Publik"
         >
@@ -119,7 +121,10 @@ export const TopBar: React.FC<TopBarProps> = ({
         />
 
         {/* Notification Bell */}
-        <button className="relative p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">
+        <button
+          suppressHydrationWarning
+          className="relative p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors"
+        >
           <BellIcon size={22} />
           <span className="absolute top-1 right-1 w-2 h-2 bg-[var(--color-error)] rounded-full" />
         </button>
@@ -130,6 +135,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             className="flex items-center hover:bg-[var(--color-bg-hover)] p-1.5 rounded-lg transition-colors"
             style={{ gap: 'clamp(0.5rem, 1vw, 0.75rem)' }}
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            suppressHydrationWarning
           >
             <Avatar
               initials={user?.username?.substring(0, 2).toUpperCase() || 'GU'}
