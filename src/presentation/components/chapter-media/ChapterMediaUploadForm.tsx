@@ -39,6 +39,9 @@ const getBlobURLs = async () => {
 
 const MAX_AUDIO_SIZE_BYTES = 100 * 1024 * 1024; // 100 MB
 
+// Must match the `chapter-media` Supabase Storage bucket's file_size_limit.
+const MAX_UPLOAD_BYTES = 50 * 1024 * 1024; // 50 MB
+
 // These formats are already compressed — no need to run FFmpeg on them.
 const ALREADY_COMPRESSED_EXTS = new Set([
   '.mp3', '.opus', '.ogg', '.m4a', '.aac', '.webm',
@@ -52,6 +55,11 @@ const compressAudio = async (
 
   // Skip FFmpeg entirely for already-compressed formats — avoids WASM crashes.
   if (ALREADY_COMPRESSED_EXTS.has(ext)) {
+    if (file.size > MAX_UPLOAD_BYTES) {
+      throw new Error(
+        `File sudah terkompresi (${ext}) tapi ukurannya ${(file.size / 1024 / 1024).toFixed(1)} MB, melebihi batas upload 50 MB. Gunakan file yang lebih kecil.`
+      );
+    }
     return file;
   }
 
@@ -95,6 +103,12 @@ const compressAudio = async (
 
     const fileData = await ffmpegInstance.readFile(outputName);
     const blob = new Blob([(fileData as Uint8Array).slice()], { type: 'audio/opus' });
+
+    if (blob.size > MAX_UPLOAD_BYTES) {
+      throw new Error(
+        `Audio hasil kompresi masih ${(blob.size / 1024 / 1024).toFixed(1)} MB, melebihi batas upload 50 MB. Gunakan file yang lebih pendek.`
+      );
+    }
 
     const origNameWithoutExt = file.name.substring(
       0,
@@ -355,7 +369,21 @@ const ChapterMediaFormInternal: React.FC<{
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFormData((prev) => ({ ...prev, file: e.target.files![0] }));
+      const file = e.target.files[0];
+      const ext = (file.name.match(/\.[0-9a-z]+$/i)?.[0] ?? '').toLowerCase();
+      const isAlreadyCompressed = ALREADY_COMPRESSED_EXTS.has(ext);
+
+      if (isAlreadyCompressed && file.size > MAX_UPLOAD_BYTES) {
+        setFormData((prev) => ({ ...prev, file: null }));
+        setErrors((prev) => ({
+          ...prev,
+          file: `File ${ext} berukuran ${(file.size / 1024 / 1024).toFixed(1)} MB, melebihi batas upload 50 MB. Format ini sudah terkompresi sehingga tidak bisa diperkecil lagi — gunakan file yang lebih kecil.`,
+        }));
+        e.target.value = '';
+        return;
+      }
+
+      setFormData((prev) => ({ ...prev, file }));
       if (errors.file) setErrors((prev) => ({ ...prev, file: '' }));
     }
   };
